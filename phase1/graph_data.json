@@ -1,0 +1,278 @@
+{
+  "nodes": [
+    {
+      "id": "ACC_001",
+      "node_type": "account",
+      "label": "ACC_001",
+      "account_type": "Savings Account",
+      "holder": "Ravi Kumar"
+    },
+    {
+      "id": "ACC_002",
+      "node_type": "account",
+      "label": "ACC_002",
+      "account_type": "UPI ID",
+      "holder": "Priya Sharma"
+    },
+    {
+      "id": "ACC_003",
+      "node_type": "account",
+      "label": "ACC_003",
+      "account_type": "Digital Wallet",
+      "holder": "Fake Name A"
+    },
+    {
+      "id": "ACC_004",
+      "node_type": "account",
+      "label": "ACC_004",
+      "account_type": "Savings Account",
+      "holder": "Amit Singh"
+    },
+    {
+      "id": "ACC_005",
+      "node_type": "account",
+      "label": "ACC_005",
+      "account_type": "UPI ID",
+      "holder": "Fake Name B"
+    },
+    {
+      "id": "ACC_006",
+      "node_type": "account",
+      "label": "ACC_006",
+      "account_type": "Digital Wallet",
+      "holder": "Deepa Nair"
+    },
+    {
+      "id": "10.0.0.5",
+      "node_type": "identifier",
+      "label": "10.0.0.5",
+      "identifier_type": "IP Address"
+    },
+    {
+      "id": "192.168.1.1",
+      "node_type": "identifier",
+      "label": "192.168.1.1",
+      "identifier_type": "IP Address"
+    },
+    {
+      "id": "AA:BB:CC:DD:EE:01",
+      "node_type": "identifier",
+      "label": "AA:BB:CC:DD:EE:01",
+      "identifier_type": "Device"
+    },
+    {
+      "id": "FF:EE:DD:CC:BB:02",
+      "node_type": "identifier",
+      "label": "FF:EE:DD:CC:BB:02",
+      "identifier_type": "Device"
+    },
+    {
+      "id": "IMEI-9988776655",
+      "node_type": "identifier",
+      "label": "IMEI-9988776655",
+      "identifier_type": "Device"
+    },
+    {
+      "id": "ATM_DEL_007",
+      "node_type": "touchpoint",
+      "label": "ATM_DEL_007",
+      "touchpoint_type": "ATM Location",
+      "city": "Delhi"
+    },
+    {
+      "id": "ATM_MUM_001",
+      "node_type": "touchpoint",
+      "label": "ATM_MUM_001",
+      "touchpoint_type": "ATM Location",
+      "city": "Mumbai"
+    },
+    {
+      "id": "PORTAL_NET",
+      "node_type": "touchpoint",
+      "label": "PORTAL_NET",
+      "touchpoint_type": "Web Portal",
+      "city": "Online"
+    }
+  ],
+  "edges": [
+    {
+      "source": "ACC_001",
+      "target": "192.168.1.1",
+      "edge_type": "uses_ip",
+      "identifier": "192.168.1.1"
+    },
+    {
+      "source": "ACC_001",
+      "target": "ACC_002",
+      "edge_type": "shared_ip",
+      "identifier": "192.168.1.1"
+    },
+    {
+      "source": "ACC_001",
+      "target": "ACC_002",
+      "edge_type": "shared_touchpoint",
+      "touchpoint": "ATM_MUM_001"
+    },
+    {
+      "source": "ACC_001",
+      "target": "AA:BB:CC:DD:EE:01",
+      "edge_type": "uses_device",
+      "device_id": "AA:BB:CC:DD:EE:01"
+    },
+    {
+      "source": "ACC_001",
+      "target": "ACC_004",
+      "edge_type": "shared_device",
+      "device_id": "AA:BB:CC:DD:EE:01"
+    },
+    {
+      "source": "ACC_001",
+      "target": "ACC_003",
+      "edge_type": "money_flow",
+      "txn_id": "TXN_001",
+      "amount": 15000
+    },
+    {
+      "source": "ACC_001",
+      "target": "ATM_MUM_001",
+      "edge_type": "used_touchpoint",
+      "touchpoint": "ATM_MUM_001"
+    },
+    {
+      "source": "ACC_002",
+      "target": "192.168.1.1",
+      "edge_type": "uses_ip",
+      "identifier": "192.168.1.1"
+    },
+    {
+      "source": "ACC_002",
+      "target": "IMEI-9988776655",
+      "edge_type": "uses_device",
+      "device_id": "IMEI-9988776655"
+    },
+    {
+      "source": "ACC_002",
+      "target": "ACC_006",
+      "edge_type": "shared_device",
+      "device_id": "IMEI-9988776655"
+    },
+    {
+      "source": "ACC_002",
+      "target": "ACC_004",
+      "edge_type": "money_flow",
+      "txn_id": "TXN_003",
+      "amount": 8000
+    },
+    {
+      "source": "ACC_002",
+      "target": "ATM_MUM_001",
+      "edge_type": "used_touchpoint",
+      "touchpoint": "ATM_MUM_001"
+    },
+    {
+      "source": "ACC_003",
+      "target": "10.0.0.5",
+      "edge_type": "uses_ip",
+      "identifier": "10.0.0.5"
+    },
+    {
+      "source": "ACC_003",
+      "target": "ACC_005",
+      "edge_type": "shared_ip",
+      "identifier": "10.0.0.5"
+    },
+    {
+      "source": "ACC_003",
+      "target": "ACC_005",
+      "edge_type": "shared_device",
+      "device_id": "FF:EE:DD:CC:BB:02"
+    },
+    {
+      "source": "ACC_003",
+      "target": "ACC_005",
+      "edge_type": "money_flow",
+      "txn_id": "TXN_002",
+      "amount": 14500
+    },
+    {
+      "source": "ACC_003",
+      "target": "ACC_005",
+      "edge_type": "shared_touchpoint",
+      "touchpoint": "PORTAL_NET"
+    },
+    {
+      "source": "ACC_003",
+      "target": "FF:EE:DD:CC:BB:02",
+      "edge_type": "uses_device",
+      "device_id": "FF:EE:DD:CC:BB:02"
+    },
+    {
+      "source": "ACC_003",
+      "target": "PORTAL_NET",
+      "edge_type": "used_touchpoint",
+      "touchpoint": "PORTAL_NET"
+    },
+    {
+      "source": "ACC_004",
+      "target": "AA:BB:CC:DD:EE:01",
+      "edge_type": "uses_device",
+      "device_id": "AA:BB:CC:DD:EE:01"
+    },
+    {
+      "source": "ACC_004",
+      "target": "ACC_006",
+      "edge_type": "money_flow",
+      "txn_id": "TXN_004",
+      "amount": 7800
+    },
+    {
+      "source": "ACC_004",
+      "target": "ACC_006",
+      "edge_type": "shared_touchpoint",
+      "touchpoint": "ATM_DEL_007"
+    },
+    {
+      "source": "ACC_004",
+      "target": "ATM_DEL_007",
+      "edge_type": "used_touchpoint",
+      "touchpoint": "ATM_DEL_007"
+    },
+    {
+      "source": "ACC_005",
+      "target": "10.0.0.5",
+      "edge_type": "uses_ip",
+      "identifier": "10.0.0.5"
+    },
+    {
+      "source": "ACC_005",
+      "target": "FF:EE:DD:CC:BB:02",
+      "edge_type": "uses_device",
+      "device_id": "FF:EE:DD:CC:BB:02"
+    },
+    {
+      "source": "ACC_005",
+      "target": "ACC_006",
+      "edge_type": "money_flow",
+      "txn_id": "TXN_005",
+      "amount": 5000
+    },
+    {
+      "source": "ACC_005",
+      "target": "PORTAL_NET",
+      "edge_type": "used_touchpoint",
+      "touchpoint": "PORTAL_NET"
+    },
+    {
+      "source": "ACC_006",
+      "target": "IMEI-9988776655",
+      "edge_type": "uses_device",
+      "device_id": "IMEI-9988776655"
+    },
+    {
+      "source": "ACC_006",
+      "target": "ATM_DEL_007",
+      "edge_type": "used_touchpoint",
+      "touchpoint": "ATM_DEL_007"
+    }
+  ]
+}

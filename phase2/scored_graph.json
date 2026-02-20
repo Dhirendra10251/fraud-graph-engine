@@ -1,0 +1,1069 @@
+{
+  "nodes": [
+    {
+      "node_type": "account",
+      "holder": "Kavitha Nair",
+      "ring": "A",
+      "account_type": "UPI ID",
+      "id": "ACC_A4",
+      "own_score": 110,
+      "final_score": 144.5,
+      "classification": "BLOCK",
+      "color": "#ff2244",
+      "flags": [
+        {
+          "flag": "Shared Device / IMEI",
+          "weight": 30
+        },
+        {
+          "flag": "Received money (1 txn)",
+          "weight": 20
+        },
+        {
+          "flag": "Sent money (1 txn)",
+          "weight": 20
+        },
+        {
+          "flag": "Transaction Loop Detected",
+          "weight": 40
+        }
+      ],
+      "label": "ACC_A4"
+    },
+    {
+      "node_type": "account",
+      "holder": "Rohan Sharma",
+      "ring": "B",
+      "account_type": "Digital Wallet",
+      "id": "ACC_B1",
+      "own_score": 120,
+      "final_score": 156.5,
+      "classification": "BLOCK",
+      "color": "#ff2244",
+      "flags": [
+        {
+          "flag": "Shared IP Address",
+          "weight": 25
+        },
+        {
+          "flag": "Shared ATM / Portal",
+          "weight": 15
+        },
+        {
+          "flag": "Received money (1 txn)",
+          "weight": 20
+        },
+        {
+          "flag": "Sent money (1 txn)",
+          "weight": 20
+        },
+        {
+          "flag": "Transaction Loop Detected",
+          "weight": 40
+        }
+      ],
+      "label": "ACC_B1"
+    },
+    {
+      "node_type": "account",
+      "holder": "Neeraj Kapoor",
+      "ring": "D",
+      "account_type": "Savings Account",
+      "id": "ACC_D1",
+      "own_score": 105,
+      "final_score": 139.5,
+      "classification": "BLOCK",
+      "color": "#ff2244",
+      "flags": [
+        {
+          "flag": "Shared Device / IMEI",
+          "weight": 30
+        },
+        {
+          "flag": "Shared ATM / Portal",
+          "weight": 15
+        },
+        {
+          "flag": "Sent money (1 txn)",
+          "weight": 20
+        },
+        {
+          "flag": "Transaction Loop Detected",
+          "weight": 40
+        }
+      ],
+      "label": "ACC_D1"
+    },
+    {
+      "node_type": "account",
+      "holder": "Arjun Mehta",
+      "ring": "A",
+      "account_type": "UPI ID",
+      "id": "ACC_A1",
+      "own_score": 120,
+      "final_score": 154.5,
+      "classification": "BLOCK",
+      "color": "#ff2244",
+      "flags": [
+        {
+          "flag": "Shared IP Address",
+          "weight": 25
+        },
+        {
+          "flag": "Shared ATM / Portal",
+          "weight": 15
+        },
+        {
+          "flag": "Received money (1 txn)",
+          "weight": 20
+        },
+        {
+          "flag": "Sent money (1 txn)",
+          "weight": 20
+        },
+        {
+          "flag": "Transaction Loop Detected",
+          "weight": 40
+        }
+      ],
+      "label": "ACC_A1"
+    },
+    {
+      "node_type": "account",
+      "holder": "Preethi Nair",
+      "ring": "C",
+      "account_type": "Savings Account",
+      "id": "ACC_C4",
+      "own_score": 110,
+      "final_score": 151.2,
+      "classification": "BLOCK",
+      "color": "#ff2244",
+      "flags": [
+        {
+          "flag": "Shared Device / IMEI",
+          "weight": 30
+        },
+        {
+          "flag": "Received money (1 txn)",
+          "weight": 20
+        },
+        {
+          "flag": "Sent money (1 txn)",
+          "weight": 20
+        },
+        {
+          "flag": "Transaction Loop Detected",
+          "weight": 40
+        }
+      ],
+      "label": "ACC_C4"
+    },
+    {
+      "node_type": "account",
+      "holder": "Tarun Saxena",
+      "ring": "D",
+      "account_type": "Digital Wallet",
+      "id": "ACC_D3",
+      "own_score": 90,
+      "final_score": 130.5,
+      "classification": "BLOCK",
+      "color": "#ff2244",
+      "flags": [
+        {
+          "flag": "Shared Device / IMEI",
+          "weight": 30
+        },
+        {
+          "flag": "Received money (1 txn)",
+          "weight": 20
+        },
+        {
+          "flag": "Transaction Loop Detected",
+          "weight": 40
+        }
+      ],
+      "label": "ACC_D3"
+    },
+    {
+      "node_type": "account",
+      "holder": "Pooja Verma",
+      "ring": "B",
+      "account_type": "Savings Account",
+      "id": "ACC_B2",
+      "own_score": 105,
+      "final_score": 141.8,
+      "classification": "BLOCK",
+      "color": "#ff2244",
+      "flags": [
+        {
+          "flag": "Shared IP Address",
+          "weight": 25
+        },
+        {
+          "flag": "Received money (1 txn)",
+          "weight": 20
+        },
+        {
+          "flag": "Sent money (1 txn)",
+          "weight": 20
+        },
+        {
+          "flag": "Transaction Loop Detected",
+          "weight": 40
+        }
+      ],
+      "label": "ACC_B2"
+    },
+    {
+      "node_type": "account",
+      "holder": "Vikram Desai",
+      "ring": "A",
+      "account_type": "Digital Wallet",
+      "id": "ACC_A3",
+      "own_score": 110,
+      "final_score": 143.5,
+      "classification": "BLOCK",
+      "color": "#ff2244",
+      "flags": [
+        {
+          "flag": "Shared Device / IMEI",
+          "weight": 30
+        },
+        {
+          "flag": "Received money (1 txn)",
+          "weight": 20
+        },
+        {
+          "flag": "Sent money (1 txn)",
+          "weight": 20
+        },
+        {
+          "flag": "Transaction Loop Detected",
+          "weight": 40
+        }
+      ],
+      "label": "ACC_A3"
+    },
+    {
+      "node_type": "account",
+      "holder": "Meera Joshi",
+      "ring": "B",
+      "account_type": "Digital Wallet",
+      "id": "ACC_B4",
+      "own_score": 135,
+      "final_score": 171.5,
+      "classification": "BLOCK",
+      "color": "#ff2244",
+      "flags": [
+        {
+          "flag": "Shared IP Address",
+          "weight": 25
+        },
+        {
+          "flag": "Shared Device / IMEI",
+          "weight": 30
+        },
+        {
+          "flag": "Received money (1 txn)",
+          "weight": 20
+        },
+        {
+          "flag": "Sent money (1 txn)",
+          "weight": 20
+        },
+        {
+          "flag": "Transaction Loop Detected",
+          "weight": 40
+        }
+      ],
+      "label": "ACC_B4"
+    },
+    {
+      "node_type": "account",
+      "holder": "Divya Krishnan",
+      "ring": "C",
+      "account_type": "UPI ID",
+      "id": "ACC_C2",
+      "own_score": 120,
+      "final_score": 161.2,
+      "classification": "BLOCK",
+      "color": "#ff2244",
+      "flags": [
+        {
+          "flag": "Shared IP Address",
+          "weight": 25
+        },
+        {
+          "flag": "Shared ATM / Portal",
+          "weight": 15
+        },
+        {
+          "flag": "Received money (1 txn)",
+          "weight": 20
+        },
+        {
+          "flag": "Sent money (1 txn)",
+          "weight": 20
+        },
+        {
+          "flag": "Transaction Loop Detected",
+          "weight": 40
+        }
+      ],
+      "label": "ACC_C2"
+    },
+    {
+      "node_type": "account",
+      "holder": "Karthik Iyer",
+      "ring": "C",
+      "account_type": "Digital Wallet",
+      "id": "ACC_C3",
+      "own_score": 125,
+      "final_score": 163.0,
+      "classification": "BLOCK",
+      "color": "#ff2244",
+      "flags": [
+        {
+          "flag": "Shared Device / IMEI",
+          "weight": 30
+        },
+        {
+          "flag": "Shared ATM / Portal",
+          "weight": 15
+        },
+        {
+          "flag": "Received money (1 txn)",
+          "weight": 20
+        },
+        {
+          "flag": "Sent money (1 txn)",
+          "weight": 20
+        },
+        {
+          "flag": "Transaction Loop Detected",
+          "weight": 40
+        }
+      ],
+      "label": "ACC_C3"
+    },
+    {
+      "node_type": "account",
+      "holder": "Anil Gupta",
+      "ring": "B",
+      "account_type": "UPI ID",
+      "id": "ACC_B3",
+      "own_score": 125,
+      "final_score": 161.0,
+      "classification": "BLOCK",
+      "color": "#ff2244",
+      "flags": [
+        {
+          "flag": "Shared Device / IMEI",
+          "weight": 30
+        },
+        {
+          "flag": "Shared ATM / Portal",
+          "weight": 15
+        },
+        {
+          "flag": "Received money (1 txn)",
+          "weight": 20
+        },
+        {
+          "flag": "Sent money (1 txn)",
+          "weight": 20
+        },
+        {
+          "flag": "Transaction Loop Detected",
+          "weight": 40
+        }
+      ],
+      "label": "ACC_B3"
+    },
+    {
+      "node_type": "account",
+      "holder": "Shalini Bose",
+      "ring": "D",
+      "account_type": "UPI ID",
+      "id": "ACC_D2",
+      "own_score": 120,
+      "final_score": 153.0,
+      "classification": "BLOCK",
+      "color": "#ff2244",
+      "flags": [
+        {
+          "flag": "Shared IP Address",
+          "weight": 25
+        },
+        {
+          "flag": "Shared ATM / Portal",
+          "weight": 15
+        },
+        {
+          "flag": "Received money (1 txn)",
+          "weight": 20
+        },
+        {
+          "flag": "Sent money (1 txn)",
+          "weight": 20
+        },
+        {
+          "flag": "Transaction Loop Detected",
+          "weight": 40
+        }
+      ],
+      "label": "ACC_D2"
+    },
+    {
+      "node_type": "account",
+      "holder": "Suresh Pillai",
+      "ring": "C",
+      "account_type": "Savings Account",
+      "id": "ACC_C1",
+      "own_score": 150,
+      "final_score": 183.4,
+      "classification": "BLOCK",
+      "color": "#ff2244",
+      "flags": [
+        {
+          "flag": "Shared IP Address",
+          "weight": 25
+        },
+        {
+          "flag": "Shared Device / IMEI",
+          "weight": 30
+        },
+        {
+          "flag": "Shared ATM / Portal",
+          "weight": 15
+        },
+        {
+          "flag": "Received money (1 txn)",
+          "weight": 20
+        },
+        {
+          "flag": "Sent money (1 txn)",
+          "weight": 20
+        },
+        {
+          "flag": "Transaction Loop Detected",
+          "weight": 40
+        }
+      ],
+      "label": "ACC_C1"
+    },
+    {
+      "node_type": "account",
+      "holder": "Sunita Rao",
+      "ring": "A",
+      "account_type": "Savings Account",
+      "id": "ACC_A2",
+      "own_score": 120,
+      "final_score": 154.5,
+      "classification": "BLOCK",
+      "color": "#ff2244",
+      "flags": [
+        {
+          "flag": "Shared IP Address",
+          "weight": 25
+        },
+        {
+          "flag": "Shared ATM / Portal",
+          "weight": 15
+        },
+        {
+          "flag": "Received money (1 txn)",
+          "weight": 20
+        },
+        {
+          "flag": "Sent money (1 txn)",
+          "weight": 20
+        },
+        {
+          "flag": "Transaction Loop Detected",
+          "weight": 40
+        }
+      ],
+      "label": "ACC_A2"
+    },
+    {
+      "id": "192.168.1.1",
+      "node_type": "identifier",
+      "label": "192.168.1.",
+      "identifier_type": "IP Address",
+      "own_score": 0,
+      "final_score": 0,
+      "classification": "CLEAN",
+      "color": "#bf7aff",
+      "flags": []
+    },
+    {
+      "id": "MAC:EE:01",
+      "node_type": "identifier",
+      "label": "MAC:EE:01",
+      "identifier_type": "Device MAC",
+      "own_score": 0,
+      "final_score": 0,
+      "classification": "CLEAN",
+      "color": "#bf7aff",
+      "flags": []
+    },
+    {
+      "id": "10.0.0.5",
+      "node_type": "identifier",
+      "label": "10.0.0.5",
+      "identifier_type": "IP Address",
+      "own_score": 0,
+      "final_score": 0,
+      "classification": "CLEAN",
+      "color": "#bf7aff",
+      "flags": []
+    },
+    {
+      "id": "MAC:EE:03",
+      "node_type": "identifier",
+      "label": "MAC:EE:03",
+      "identifier_type": "Device MAC",
+      "own_score": 0,
+      "final_score": 0,
+      "classification": "CLEAN",
+      "color": "#bf7aff",
+      "flags": []
+    },
+    {
+      "id": "172.16.0.3",
+      "node_type": "identifier",
+      "label": "172.16.0.3",
+      "identifier_type": "IP Address",
+      "own_score": 0,
+      "final_score": 0,
+      "classification": "CLEAN",
+      "color": "#bf7aff",
+      "flags": []
+    },
+    {
+      "id": "MAC:EE:02",
+      "node_type": "identifier",
+      "label": "MAC:EE:02",
+      "identifier_type": "Device MAC",
+      "own_score": 0,
+      "final_score": 0,
+      "classification": "CLEAN",
+      "color": "#bf7aff",
+      "flags": []
+    },
+    {
+      "id": "IMEI-7766",
+      "node_type": "identifier",
+      "label": "IMEI-7766",
+      "identifier_type": "IMEI",
+      "own_score": 0,
+      "final_score": 0,
+      "classification": "CLEAN",
+      "color": "#bf7aff",
+      "flags": []
+    },
+    {
+      "id": "IMEI-5544",
+      "node_type": "identifier",
+      "label": "IMEI-5544",
+      "identifier_type": "IMEI",
+      "own_score": 0,
+      "final_score": 0,
+      "classification": "CLEAN",
+      "color": "#bf7aff",
+      "flags": []
+    },
+    {
+      "id": "10.0.1.8",
+      "node_type": "identifier",
+      "label": "10.0.1.8",
+      "identifier_type": "IP Address",
+      "own_score": 0,
+      "final_score": 0,
+      "classification": "CLEAN",
+      "color": "#bf7aff",
+      "flags": []
+    },
+    {
+      "id": "ATM_MUM",
+      "node_type": "touchpoint",
+      "label": "ATM Mumbai",
+      "city": "Mumbai",
+      "own_score": 0,
+      "final_score": 0,
+      "classification": "CLEAN",
+      "color": "#ff8c42",
+      "flags": []
+    },
+    {
+      "id": "ATM_DEL",
+      "node_type": "touchpoint",
+      "label": "ATM Delhi",
+      "city": "Delhi",
+      "own_score": 0,
+      "final_score": 0,
+      "classification": "CLEAN",
+      "color": "#ff8c42",
+      "flags": []
+    },
+    {
+      "id": "PORTAL_BLR",
+      "node_type": "touchpoint",
+      "label": "Portal BLR",
+      "city": "Bangalore",
+      "own_score": 0,
+      "final_score": 0,
+      "classification": "CLEAN",
+      "color": "#ff8c42",
+      "flags": []
+    },
+    {
+      "id": "ATM_HYD",
+      "node_type": "touchpoint",
+      "label": "ATM Hyderabad",
+      "city": "Hyderabad",
+      "own_score": 0,
+      "final_score": 0,
+      "classification": "CLEAN",
+      "color": "#ff8c42",
+      "flags": []
+    }
+  ],
+  "edges": [
+    {
+      "source": "ACC_A1",
+      "target": "ACC_A2",
+      "edge_type": "shared_ip",
+      "amount": 0
+    },
+    {
+      "source": "ACC_A1",
+      "target": "ACC_A2",
+      "edge_type": "shared_touchpoint",
+      "amount": 0
+    },
+    {
+      "source": "ACC_A1",
+      "target": "ACC_A2",
+      "edge_type": "money_flow",
+      "amount": 18000
+    },
+    {
+      "source": "ACC_A2",
+      "target": "ACC_A1",
+      "edge_type": "shared_ip",
+      "amount": 0
+    },
+    {
+      "source": "ACC_A2",
+      "target": "ACC_A1",
+      "edge_type": "shared_touchpoint",
+      "amount": 0
+    },
+    {
+      "source": "ACC_A2",
+      "target": "ACC_A3",
+      "edge_type": "money_flow",
+      "amount": 17500
+    },
+    {
+      "source": "ACC_A3",
+      "target": "ACC_D1",
+      "edge_type": "shared_device",
+      "amount": 0
+    },
+    {
+      "source": "ACC_A3",
+      "target": "ACC_A4",
+      "edge_type": "shared_device",
+      "amount": 0
+    },
+    {
+      "source": "ACC_A3",
+      "target": "ACC_A4",
+      "edge_type": "money_flow",
+      "amount": 17000
+    },
+    {
+      "source": "ACC_A4",
+      "target": "ACC_A3",
+      "edge_type": "shared_device",
+      "amount": 0
+    },
+    {
+      "source": "ACC_A4",
+      "target": "ACC_A1",
+      "edge_type": "money_flow",
+      "amount": 9500
+    },
+    {
+      "source": "ACC_B1",
+      "target": "ACC_B2",
+      "edge_type": "shared_ip",
+      "amount": 0
+    },
+    {
+      "source": "ACC_B1",
+      "target": "ACC_B2",
+      "edge_type": "money_flow",
+      "amount": 16000
+    },
+    {
+      "source": "ACC_B1",
+      "target": "ACC_B3",
+      "edge_type": "shared_touchpoint",
+      "amount": 0
+    },
+    {
+      "source": "ACC_B2",
+      "target": "ACC_B1",
+      "edge_type": "shared_ip",
+      "amount": 0
+    },
+    {
+      "source": "ACC_B2",
+      "target": "ACC_B3",
+      "edge_type": "money_flow",
+      "amount": 15500
+    },
+    {
+      "source": "ACC_B3",
+      "target": "ACC_B4",
+      "edge_type": "shared_device",
+      "amount": 0
+    },
+    {
+      "source": "ACC_B3",
+      "target": "ACC_B4",
+      "edge_type": "money_flow",
+      "amount": 14000
+    },
+    {
+      "source": "ACC_B3",
+      "target": "ACC_B1",
+      "edge_type": "shared_touchpoint",
+      "amount": 0
+    },
+    {
+      "source": "ACC_B4",
+      "target": "ACC_D2",
+      "edge_type": "shared_ip",
+      "amount": 0
+    },
+    {
+      "source": "ACC_B4",
+      "target": "ACC_B3",
+      "edge_type": "shared_device",
+      "amount": 0
+    },
+    {
+      "source": "ACC_B4",
+      "target": "ACC_B1",
+      "edge_type": "money_flow",
+      "amount": 10000
+    },
+    {
+      "source": "ACC_C1",
+      "target": "ACC_C2",
+      "edge_type": "shared_ip",
+      "amount": 0
+    },
+    {
+      "source": "ACC_C1",
+      "target": "ACC_C2",
+      "edge_type": "shared_touchpoint",
+      "amount": 0
+    },
+    {
+      "source": "ACC_C1",
+      "target": "ACC_C2",
+      "edge_type": "money_flow",
+      "amount": 14000
+    },
+    {
+      "source": "ACC_C1",
+      "target": "ACC_D3",
+      "edge_type": "shared_device",
+      "amount": 0
+    },
+    {
+      "source": "ACC_C1",
+      "target": "ACC_C3",
+      "edge_type": "shared_touchpoint",
+      "amount": 0
+    },
+    {
+      "source": "ACC_C2",
+      "target": "ACC_C1",
+      "edge_type": "shared_ip",
+      "amount": 0
+    },
+    {
+      "source": "ACC_C2",
+      "target": "ACC_C1",
+      "edge_type": "shared_touchpoint",
+      "amount": 0
+    },
+    {
+      "source": "ACC_C2",
+      "target": "ACC_C3",
+      "edge_type": "shared_touchpoint",
+      "amount": 0
+    },
+    {
+      "source": "ACC_C2",
+      "target": "ACC_C3",
+      "edge_type": "money_flow",
+      "amount": 13500
+    },
+    {
+      "source": "ACC_C3",
+      "target": "ACC_C4",
+      "edge_type": "shared_device",
+      "amount": 0
+    },
+    {
+      "source": "ACC_C3",
+      "target": "ACC_C4",
+      "edge_type": "money_flow",
+      "amount": 13000
+    },
+    {
+      "source": "ACC_C3",
+      "target": "ACC_C1",
+      "edge_type": "shared_touchpoint",
+      "amount": 0
+    },
+    {
+      "source": "ACC_C3",
+      "target": "ACC_C2",
+      "edge_type": "shared_touchpoint",
+      "amount": 0
+    },
+    {
+      "source": "ACC_C4",
+      "target": "ACC_C3",
+      "edge_type": "shared_device",
+      "amount": 0
+    },
+    {
+      "source": "ACC_C4",
+      "target": "ACC_C1",
+      "edge_type": "money_flow",
+      "amount": 7500
+    },
+    {
+      "source": "ACC_D1",
+      "target": "ACC_A3",
+      "edge_type": "shared_device",
+      "amount": 0
+    },
+    {
+      "source": "ACC_D1",
+      "target": "ACC_D2",
+      "edge_type": "shared_touchpoint",
+      "amount": 0
+    },
+    {
+      "source": "ACC_D1",
+      "target": "ACC_D2",
+      "edge_type": "money_flow",
+      "amount": 22000
+    },
+    {
+      "source": "ACC_D2",
+      "target": "ACC_B4",
+      "edge_type": "shared_ip",
+      "amount": 0
+    },
+    {
+      "source": "ACC_D2",
+      "target": "ACC_D1",
+      "edge_type": "shared_touchpoint",
+      "amount": 0
+    },
+    {
+      "source": "ACC_D2",
+      "target": "ACC_D3",
+      "edge_type": "money_flow",
+      "amount": 21000
+    },
+    {
+      "source": "ACC_D3",
+      "target": "ACC_C1",
+      "edge_type": "shared_device",
+      "amount": 0
+    },
+    {
+      "source": "ACC_A1",
+      "target": "192.168.1.1",
+      "edge_type": "uses_identifier",
+      "amount": 0
+    },
+    {
+      "source": "ACC_A2",
+      "target": "192.168.1.1",
+      "edge_type": "uses_identifier",
+      "amount": 0
+    },
+    {
+      "source": "ACC_A3",
+      "target": "MAC:EE:01",
+      "edge_type": "uses_identifier",
+      "amount": 0
+    },
+    {
+      "source": "ACC_A4",
+      "target": "MAC:EE:01",
+      "edge_type": "uses_identifier",
+      "amount": 0
+    },
+    {
+      "source": "ACC_B1",
+      "target": "10.0.0.5",
+      "edge_type": "uses_identifier",
+      "amount": 0
+    },
+    {
+      "source": "ACC_B2",
+      "target": "10.0.0.5",
+      "edge_type": "uses_identifier",
+      "amount": 0
+    },
+    {
+      "source": "ACC_B3",
+      "target": "MAC:EE:03",
+      "edge_type": "uses_identifier",
+      "amount": 0
+    },
+    {
+      "source": "ACC_B4",
+      "target": "MAC:EE:03",
+      "edge_type": "uses_identifier",
+      "amount": 0
+    },
+    {
+      "source": "ACC_C1",
+      "target": "172.16.0.3",
+      "edge_type": "uses_identifier",
+      "amount": 0
+    },
+    {
+      "source": "ACC_C2",
+      "target": "172.16.0.3",
+      "edge_type": "uses_identifier",
+      "amount": 0
+    },
+    {
+      "source": "ACC_C3",
+      "target": "MAC:EE:02",
+      "edge_type": "uses_identifier",
+      "amount": 0
+    },
+    {
+      "source": "ACC_C4",
+      "target": "MAC:EE:02",
+      "edge_type": "uses_identifier",
+      "amount": 0
+    },
+    {
+      "source": "ACC_D1",
+      "target": "IMEI-7766",
+      "edge_type": "uses_identifier",
+      "amount": 0
+    },
+    {
+      "source": "ACC_A3",
+      "target": "IMEI-7766",
+      "edge_type": "uses_identifier",
+      "amount": 0
+    },
+    {
+      "source": "ACC_D3",
+      "target": "IMEI-5544",
+      "edge_type": "uses_identifier",
+      "amount": 0
+    },
+    {
+      "source": "ACC_C1",
+      "target": "IMEI-5544",
+      "edge_type": "uses_identifier",
+      "amount": 0
+    },
+    {
+      "source": "ACC_D2",
+      "target": "10.0.1.8",
+      "edge_type": "uses_identifier",
+      "amount": 0
+    },
+    {
+      "source": "ACC_B4",
+      "target": "10.0.1.8",
+      "edge_type": "uses_identifier",
+      "amount": 0
+    },
+    {
+      "source": "ACC_A1",
+      "target": "ATM_MUM",
+      "edge_type": "used_touchpoint",
+      "amount": 0
+    },
+    {
+      "source": "ACC_A2",
+      "target": "ATM_MUM",
+      "edge_type": "used_touchpoint",
+      "amount": 0
+    },
+    {
+      "source": "ACC_B1",
+      "target": "ATM_DEL",
+      "edge_type": "used_touchpoint",
+      "amount": 0
+    },
+    {
+      "source": "ACC_B3",
+      "target": "ATM_DEL",
+      "edge_type": "used_touchpoint",
+      "amount": 0
+    },
+    {
+      "source": "ACC_C1",
+      "target": "PORTAL_BLR",
+      "edge_type": "used_touchpoint",
+      "amount": 0
+    },
+    {
+      "source": "ACC_C2",
+      "target": "PORTAL_BLR",
+      "edge_type": "used_touchpoint",
+      "amount": 0
+    },
+    {
+      "source": "ACC_C3",
+      "target": "PORTAL_BLR",
+      "edge_type": "used_touchpoint",
+      "amount": 0
+    },
+    {
+      "source": "ACC_D1",
+      "target": "ATM_HYD",
+      "edge_type": "used_touchpoint",
+      "amount": 0
+    },
+    {
+      "source": "ACC_D2",
+      "target": "ATM_HYD",
+      "edge_type": "used_touchpoint",
+      "amount": 0
+    }
+  ],
+  "summary": {
+    "BLOCK": 15,
+    "SUSPICIOUS": 0,
+    "WATCH": 0,
+    "CLEAN": 0,
+    "max_score": 183.4,
+    "avg_score": 154.0
+  }
+}

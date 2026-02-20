@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Fraud Graph Engine — Phase 2: All Four Risk Tiers</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@400;600;800;900&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#040a12;--panel:#060d1a;--border:#0e2240;--accent:#00e5ff;
+  --mono:'Share Tech Mono',monospace;--display:'Barlow Condensed',sans-serif;
+  --clean:#00cc66;--watch:#ffcc00;--susp:#ff8c00;--block:#ff2244;
+}
+body{background:var(--bg);color:#c8e0ff;font-family:var(--mono);height:100vh;overflow:hidden;
+  display:grid;grid-template-rows:58px 1fr;grid-template-columns:260px 1fr 300px}
+
+/* HEADER */
+header{grid-column:1/-1;background:linear-gradient(90deg,#06101e,#0b1e32,#06101e);
+  border-bottom:2px solid #1a3a5c;display:flex;align-items:center;padding:0 20px;gap:14px;position:relative;overflow:hidden}
+header::before{content:'';position:absolute;inset:0;
+  background:repeating-linear-gradient(90deg,transparent,transparent 120px,rgba(0,229,255,0.01) 120px,rgba(0,229,255,0.01) 121px);pointer-events:none}
+.logo-dot{width:11px;height:11px;border-radius:50%;background:var(--block);
+  box-shadow:0 0 14px var(--block),0 0 28px rgba(255,34,68,0.4);animation:blink 1.4s infinite;flex-shrink:0}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.15}}
+header h1{font-family:var(--display);font-weight:900;font-size:22px;letter-spacing:4px;text-transform:uppercase;color:#fff;text-shadow:0 0 20px rgba(0,229,255,0.25)}
+header h1 span{color:var(--block);text-shadow:0 0 20px rgba(255,34,68,0.5)}
+.phase-badge{background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.3);color:var(--accent);font-size:9px;letter-spacing:2px;padding:3px 10px;text-transform:uppercase}
+.tier-badges{display:flex;gap:8px;margin-left:auto}
+.tb{font-size:9px;font-weight:bold;letter-spacing:1px;padding:3px 9px;border-radius:1px}
+.tb-clean{background:rgba(0,204,102,0.12);border:1px solid var(--clean);color:var(--clean)}
+.tb-watch{background:rgba(255,204,0,0.12);border:1px solid var(--watch);color:var(--watch)}
+.tb-susp {background:rgba(255,140,0,0.12);border:1px solid var(--susp);color:var(--susp)}
+.tb-block{background:rgba(255,34,68,0.12);border:1px solid var(--block);color:var(--block)}
+
+/* PANELS */
+.pl,.pr{background:var(--panel);padding:14px;overflow-y:auto;display:flex;flex-direction:column;gap:12px}
+.pl{border-right:1px solid var(--border)}.pr{border-left:1px solid var(--border)}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#1a3a5c;border-radius:2px}
+
+.sec{font-family:var(--display);font-weight:800;font-size:12px;letter-spacing:3px;text-transform:uppercase;
+  color:#7dd4fc;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #1a3a5c;display:flex;align-items:center;gap:8px}
+.sec::before{content:'';display:inline-block;width:3px;height:13px;background:var(--accent);box-shadow:0 0 8px var(--accent);flex-shrink:0;border-radius:1px}
+
+/* TIER LEGEND */
+.tier-card{border-radius:2px;padding:8px 10px;margin-bottom:5px;cursor:pointer;transition:all 0.18s;border:1px solid transparent;position:relative;overflow:hidden}
+.tier-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px}
+.tier-card:hover{transform:translateX(3px)}
+.tier-card.active{transform:translateX(4px);box-shadow:0 0 14px rgba(0,0,0,0.5)}
+.tc-clean{background:rgba(0,204,102,0.05);border-color:rgba(0,204,102,0.2)}.tc-clean::before{background:var(--clean)}
+.tc-watch {background:rgba(255,204,0,0.05);border-color:rgba(255,204,0,0.2)}.tc-watch::before{background:var(--watch)}
+.tc-susp  {background:rgba(255,140,0,0.05);border-color:rgba(255,140,0,0.2)}.tc-susp::before{background:var(--susp)}
+.tc-block {background:rgba(255,34,68,0.05);border-color:rgba(255,34,68,0.2)}.tc-block::before{background:var(--block)}
+.tc-active-clean{border-color:var(--clean)!important;box-shadow:0 0 10px rgba(0,204,102,0.15)}
+.tc-active-watch{border-color:var(--watch)!important;box-shadow:0 0 10px rgba(255,204,0,0.15)}
+.tc-active-susp {border-color:var(--susp)!important;box-shadow:0 0 10px rgba(255,140,0,0.15)}
+.tc-active-block{border-color:var(--block)!important;box-shadow:0 0 10px rgba(255,34,68,0.15)}
+.tc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.tc-name{font-weight:bold;font-size:12px;font-family:var(--display);letter-spacing:1px}
+.tc-range{font-size:10px;color:#4a6a8a}
+.tc-count{font-size:18px;font-weight:bold;font-family:var(--display)}
+.tc-desc{font-size:9px;color:#4a6a8a;line-height:1.6}
+.tc-bar{height:3px;border-radius:1px;margin-top:7px;transition:width 0.4s ease}
+
+/* FILTER BTNS */
+.fb{background:none;border:1px solid #0e2240;color:#4a6a8a;font-family:var(--mono);font-size:10px;
+  letter-spacing:1px;padding:5px 10px;cursor:pointer;transition:all 0.15s;display:flex;align-items:center;
+  gap:7px;width:100%;margin-bottom:4px;text-transform:uppercase}
+.fb:hover,.fb.on{border-color:var(--accent);color:var(--accent);background:rgba(0,229,255,0.05)}
+.fb-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+/* STAT ROW */
+.sr{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #0a1828;font-size:11px;color:#6a90b0}
+.sv{font-weight:bold;font-size:14px}
+
+/* CANVAS */
+#cvs{position:relative;background:radial-gradient(ellipse at 50% 50%,#060f1e,#020609);overflow:hidden}
+svg{width:100%;height:100%}
+#cvs::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(to bottom,transparent 0,transparent 3px,rgba(0,0,0,0.04) 3px,rgba(0,0,0,0.04) 4px);pointer-events:none;z-index:10}
+
+/* SCORE BREAKDOWN */
+#sp{border:1px solid var(--border);border-radius:2px;padding:12px;background:#030810;min-height:150px;transition:border-color 0.2s}
+#sp.lit{border-color:var(--accent);box-shadow:0 0 14px rgba(0,229,255,0.07)}
+.sph{color:#1e3a5a;font-size:11px}
+.spname{font-family:var(--display);font-weight:800;font-size:17px;color:#fff}
+.spbadge{font-size:9px;letter-spacing:1.5px;padding:2px 7px;border-radius:1px;font-weight:bold;margin-left:6px}
+.b-BLOCK{background:rgba(255,34,68,0.15);border:1px solid var(--block);color:var(--block)}
+.b-SUSPICIOUS{background:rgba(255,140,0,0.15);border:1px solid var(--susp);color:var(--susp)}
+.b-WATCH{background:rgba(255,204,0,0.15);border:1px solid var(--watch);color:var(--watch)}
+.b-CLEAN{background:rgba(0,204,102,0.15);border:1px solid var(--clean);color:var(--clean)}
+.sbar-track{height:8px;background:#0a1828;border-radius:2px;overflow:hidden;margin:8px 0 3px}
+.sbar-fill{height:100%;border-radius:2px;transition:width 0.6s ease}
+.snums{display:flex;justify-content:space-between;font-size:10px;color:#3a6a9a;margin-bottom:8px}
+.sfinal{font-size:22px;font-weight:bold}
+.fr{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid #0a1828;font-size:10px}
+.fn{color:#8aacc8}.fw{font-weight:bold}
+.fr:last-child{border-bottom:none}
+.contamrow{display:flex;justify-content:space-between;padding:6px 0 3px;font-size:10px;border-top:1px dashed #1a3a5c;margin-top:5px;color:#4a6a8a}
+.contamrow span:last-child{color:#7dd4fc}
+
+/* ACCOUNT LIST */
+.al{display:flex;flex-direction:column;gap:3px}
+.ai{display:flex;align-items:center;gap:8px;padding:5px 8px;border:1px solid #0e2240;cursor:pointer;border-radius:1px;transition:all 0.15s;font-size:10px}
+.ai:hover{border-color:#1a4a7a;background:rgba(0,229,255,0.03)}
+.ai.sel{border-color:var(--accent);background:rgba(0,229,255,0.06)}
+.aidot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.ainame{flex:1;color:#8aacc8}.aiscore{font-weight:bold;font-size:11px}
+.aitag{font-size:8px;padding:1px 5px;border-radius:1px;margin-left:4px}
+.tag-BLOCK{color:var(--block);border:1px solid rgba(255,34,68,0.3)}
+.tag-SUSPICIOUS{color:var(--susp);border:1px solid rgba(255,140,0,0.3)}
+.tag-WATCH{color:var(--watch);border:1px solid rgba(255,204,0,0.3)}
+.tag-CLEAN{color:var(--clean);border:1px solid rgba(0,204,102,0.3)}
+
+/* TIER SEPARATOR */
+.tier-sep{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#1e3a5a;padding:4px 0 3px;margin-top:4px;border-top:1px solid #0a1828}
+
+/* DIMMING */
+.dimmed-circle{opacity:0.07!important}
+.dimmed-text{opacity:0.04!important}
+.dimmed-edge{opacity:0.03!important}
+
+/* TOOLTIP */
+#tip{position:absolute;background:#050d1a;border:1px solid var(--accent);padding:8px 12px;font-size:10px;
+  pointer-events:none;opacity:0;transition:opacity 0.12s;line-height:1.9;z-index:20;box-shadow:0 0 20px rgba(0,229,255,0.1)}
+#tip.show{opacity:1}
+
+/* HINT BANNER */
+#hint{position:absolute;top:12px;left:50%;transform:translateX(-50%);background:#060d1a;border:1px solid #1a3a5c;
+  padding:4px 16px;font-size:10px;color:#3a6a9a;letter-spacing:1.5px;text-transform:uppercase;
+  pointer-events:none;z-index:15;opacity:0;transition:opacity 0.3s;white-space:nowrap}
+#hint.show{opacity:1}
+#hint span{color:#7dd4fc}
+
+/* CONTAMINATION CALLOUT */
+.contam-note{font-size:10px;background:rgba(0,229,255,0.05);border:1px solid rgba(0,229,255,0.15);padding:8px 10px;border-radius:2px;color:#4a8ab0;line-height:1.7}
+.contam-note strong{color:var(--accent)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-dot"></div>
+  <h1>FRAUD <span>GRAPH</span> ENGINE</h1>
+  <span class="phase-badge">Phase 2 · Risk Heatmap</span>
+  <div class="tier-badges">
+    <div class="tb tb-block">🔴 BLOCK: 14</div>
+    <div class="tb tb-susp">🟠 SUSPICIOUS: 5</div>
+    <div class="tb tb-watch">🟡 WATCH: 2</div>
+    <div class="tb tb-clean">🟢 CLEAN: 3</div>
+  </div>
+</header>
+
+<!-- LEFT PANEL -->
+<aside class="pl">
+  <div>
+    <div class="sec">Risk Tier Legend</div>
+    <div class="tier-card tc-clean" data-class="CLEAN">
+      <div class="tc-top"><span class="tc-name" style="color:var(--clean)">🟢 CLEAN</span><span class="tc-count" style="color:var(--clean)" id="cnt-CLEAN">3</span></div>
+      <div class="tc-range">Score: 0 – 30</div>
+      <div class="tc-desc">No shared identifiers, no suspicious transactions. No flags triggered.</div>
+      <div class="tc-bar" style="background:var(--clean);width:18%"></div>
+    </div>
+    <div class="tier-card tc-watch" data-class="WATCH">
+      <div class="tc-top"><span class="tc-name" style="color:var(--watch)">🟡 WATCH</span><span class="tc-count" style="color:var(--watch)" id="cnt-WATCH">2</span></div>
+      <div class="tc-range">Score: 31 – 60</div>
+      <div class="tc-desc">Shared touchpoint or one-way money flow. Circumstantial — monitor.</div>
+      <div class="tc-bar" style="background:var(--watch);width:35%"></div>
+    </div>
+    <div class="tier-card tc-susp" data-class="SUSPICIOUS">
+      <div class="tc-top"><span class="tc-name" style="color:var(--susp)">🟠 SUSPICIOUS</span><span class="tc-count" style="color:var(--susp)" id="cnt-SUSPICIOUS">5</span></div>
+      <div class="tc-range">Score: 61 – 90</div>
+      <div class="tc-desc">Shared IP + bidirectional flows. Strong co-ordination signals.</div>
+      <div class="tc-bar" style="background:var(--susp);width:60%"></div>
+    </div>
+    <div class="tier-card tc-block" data-class="BLOCK">
+      <div class="tc-top"><span class="tc-name" style="color:var(--block)">🔴 BLOCK</span><span class="tc-count" style="color:var(--block)" id="cnt-BLOCK">14</span></div>
+      <div class="tc-range">Score: 91+</div>
+      <div class="tc-desc">Full fraud ring. Shared device + transaction loop + multiple flags.</div>
+      <div class="tc-bar" style="background:var(--block);width:100%"></div>
+    </div>
+  </div>
+
+  <div>
+    <div class="sec">Filter Edges</div>
+    <button class="fb on" data-edge="all"><div class="fb-dot" style="background:#fff"></div>Show All</button>
+    <button class="fb" data-edge="money_flow"><div class="fb-dot" style="background:#ffd700"></div>Money Flow</button>
+    <button class="fb" data-edge="shared_ip"><div class="fb-dot" style="background:#00cfff"></div>Shared IP</button>
+    <button class="fb" data-edge="shared_device"><div class="fb-dot" style="background:#bf7aff"></div>Shared Device</button>
+    <button class="fb" data-edge="shared_touchpoint"><div class="fb-dot" style="background:#ff8c42"></div>Shared Touchpoint</button>
+  </div>
+
+  <div>
+    <div class="sec">Model Stats</div>
+    <div class="sr"><span>Total Accounts</span><span class="sv" style="color:var(--accent)">24</span></div>
+    <div class="sr"><span>Max Score</span><span class="sv" style="color:var(--block)">180.4</span></div>
+    <div class="sr"><span>Avg Score</span><span class="sv" style="color:var(--susp)">107.3</span></div>
+    <div class="sr"><span>Loop Accounts</span><span class="sv" style="color:#ffd700">12</span></div>
+    <div class="sr"><span>Contamination Rate</span><span class="sv" style="color:#7dd4fc">30%</span></div>
+  </div>
+</aside>
+
+<!-- CANVAS -->
+<main id="cvs">
+  <svg id="gs"></svg>
+  <div id="tip"></div>
+  <div id="hint">Showing tier: <span id="hint-label">BLOCK</span> — click canvas to reset</div>
+</main>
+
+<!-- RIGHT PANEL -->
+<aside class="pr">
+  <div>
+    <div class="sec">Score Breakdown</div>
+    <div id="sp"><div class="sph">Click any account node to inspect its full risk score breakdown...</div></div>
+  </div>
+
+  <div>
+    <div class="sec">Contamination Note</div>
+    <div class="contam-note">
+      <strong>Deepa Thomas (F2)</strong> is the clearest example of contamination.<br>
+      Own score = 55 (WATCH range) but final = <strong style="color:var(--susp)">65.5 → SUSPICIOUS</strong><br>
+      because she sits between two WATCH neighbours who bleed +10.5 into her score.
+    </div>
+  </div>
+
+  <div>
+    <div class="sec">Account Index</div>
+    <div class="al" id="al"><!-- JS fills this --></div>
+  </div>
+</aside>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// GRAPH DATA  (from risk_scorer_v2.py output)
+// ══════════════════════════════════════════════════════════════
+const COLOR = {CLEAN:"#00cc66", WATCH:"#ffcc00", SUSPICIOUS:"#ff8c00", BLOCK:"#ff2244"};
+const ECOLOR = {money_flow:"#ffd700", shared_ip:"#00cfff", shared_device:"#bf7aff",
+                shared_touchpoint:"#ff8c42", uses_identifier:"rgba(30,50,80,0.7)", used_touchpoint:"rgba(20,30,10,0.5)"};
+const EWIDTH  = {money_flow:2.5, shared_ip:2, shared_device:2, shared_touchpoint:2, uses_identifier:1, used_touchpoint:1};
+
+const NODES = [
+  // BLOCK — Ring A
+  {id:"ACC_A1",nt:"account",label:"ACC_A1",holder:"Arjun Mehta",   ring:"A",atype:"UPI ID",         os:120,fs:154.5,cl:"BLOCK",   flags:[{f:"Shared IP Address",w:25},{f:"Shared ATM / Portal",w:15},{f:"Received money (1 txn)",w:20},{f:"Sent money (1 txn)",w:20},{f:"Transaction Loop",w:40}]},
+  {id:"ACC_A2",nt:"account",label:"ACC_A2",holder:"Sunita Rao",    ring:"A",atype:"Savings Account",os:120,fs:154.5,cl:"BLOCK",   flags:[{f:"Shared IP Address",w:25},{f:"Shared ATM / Portal",w:15},{f:"Received money (1 txn)",w:20},{f:"Sent money (1 txn)",w:20},{f:"Transaction Loop",w:40}]},
+  {id:"ACC_A3",nt:"account",label:"ACC_A3",holder:"Vikram Desai",  ring:"A",atype:"Digital Wallet", os:110,fs:139.5,cl:"BLOCK",   flags:[{f:"Shared Device / IMEI",w:30},{f:"Received money (1 txn)",w:20},{f:"Sent money (1 txn)",w:20},{f:"Transaction Loop",w:40}]},
+  {id:"ACC_A4",nt:"account",label:"ACC_A4",holder:"Kavitha Nair",  ring:"A",atype:"UPI ID",         os:110,fs:144.5,cl:"BLOCK",   flags:[{f:"Shared Device / IMEI",w:30},{f:"Received money (1 txn)",w:20},{f:"Sent money (1 txn)",w:20},{f:"Transaction Loop",w:40}]},
+  // BLOCK — Ring B
+  {id:"ACC_B1",nt:"account",label:"ACC_B1",holder:"Rohan Sharma",  ring:"B",atype:"Digital Wallet", os:120,fs:156.5,cl:"BLOCK",   flags:[{f:"Shared IP Address",w:25},{f:"Shared ATM / Portal",w:15},{f:"Received money (1 txn)",w:20},{f:"Sent money (1 txn)",w:20},{f:"Transaction Loop",w:40}]},
+  {id:"ACC_B2",nt:"account",label:"ACC_B2",holder:"Pooja Verma",   ring:"B",atype:"Savings Account",os:105,fs:141.8,cl:"BLOCK",   flags:[{f:"Shared IP Address",w:25},{f:"Received money (1 txn)",w:20},{f:"Sent money (1 txn)",w:20},{f:"Transaction Loop",w:40}]},
+  {id:"ACC_B3",nt:"account",label:"ACC_B3",holder:"Anil Gupta",    ring:"B",atype:"UPI ID",         os:125,fs:161.0,cl:"BLOCK",   flags:[{f:"Shared Device / IMEI",w:30},{f:"Shared ATM / Portal",w:15},{f:"Received money (1 txn)",w:20},{f:"Sent money (1 txn)",w:20},{f:"Transaction Loop",w:40}]},
+  {id:"ACC_B4",nt:"account",label:"ACC_B4",holder:"Meera Joshi",   ring:"B",atype:"Digital Wallet", os:135,fs:167.5,cl:"BLOCK",   flags:[{f:"Shared Device / IMEI",w:30},{f:"Shared IP Address",w:25},{f:"Received money (1 txn)",w:20},{f:"Sent money (1 txn)",w:20},{f:"Transaction Loop",w:40}]},
+  // BLOCK — Ring C
+  {id:"ACC_C1",nt:"account",label:"ACC_C1",holder:"Suresh Pillai", ring:"C",atype:"Savings Account",os:150,fs:180.4,cl:"BLOCK",   flags:[{f:"Shared Device / IMEI",w:30},{f:"Shared IP Address",w:25},{f:"Shared ATM / Portal",w:15},{f:"Received money (1 txn)",w:20},{f:"Sent money (1 txn)",w:20},{f:"Transaction Loop",w:40}]},
+  {id:"ACC_C2",nt:"account",label:"ACC_C2",holder:"Divya Krishnan",ring:"C",atype:"UPI ID",         os:120,fs:161.2,cl:"BLOCK",   flags:[{f:"Shared IP Address",w:25},{f:"Shared ATM / Portal",w:15},{f:"Received money (1 txn)",w:20},{f:"Sent money (1 txn)",w:20},{f:"Transaction Loop",w:40}]},
+  {id:"ACC_C3",nt:"account",label:"ACC_C3",holder:"Karthik Iyer",  ring:"C",atype:"Digital Wallet", os:125,fs:163.0,cl:"BLOCK",   flags:[{f:"Shared Device / IMEI",w:30},{f:"Shared ATM / Portal",w:15},{f:"Received money (1 txn)",w:20},{f:"Sent money (1 txn)",w:20},{f:"Transaction Loop",w:40}]},
+  {id:"ACC_C4",nt:"account",label:"ACC_C4",holder:"Preethi Nair",  ring:"C",atype:"Savings Account",os:110,fs:151.2,cl:"BLOCK",   flags:[{f:"Shared Device / IMEI",w:30},{f:"Received money (1 txn)",w:20},{f:"Sent money (1 txn)",w:20},{f:"Transaction Loop",w:40}]},
+  // BLOCK — Ring D (bridge)
+  {id:"ACC_D1",nt:"account",label:"ACC_D1",holder:"Neeraj Kapoor", ring:"D",atype:"Savings Account",os:65, fs:93.5, cl:"BLOCK",   flags:[{f:"Shared Device / IMEI",w:30},{f:"Shared ATM / Portal",w:15},{f:"Sent money (1 txn)",w:20}]},
+  {id:"ACC_D2",nt:"account",label:"ACC_D2",holder:"Shalini Bose",  ring:"D",atype:"UPI ID",         os:80, fs:105.0,cl:"BLOCK",   flags:[{f:"Shared IP Address",w:25},{f:"Shared ATM / Portal",w:15},{f:"Received money (1 txn)",w:20},{f:"Sent money (1 txn)",w:20}]},
+  {id:"ACC_D3",nt:"account",label:"ACC_D3",holder:"Tarun Saxena",  ring:"D",atype:"Digital Wallet", os:50, fs:84.5, cl:"SUSPICIOUS",flags:[{f:"Shared Device / IMEI",w:30},{f:"Received money (1 txn)",w:20}]},
+  // SUSPICIOUS — G cluster (shared IP, bidirectional flows, no loop)
+  {id:"ACC_G1",nt:"account",label:"ACC_G1",holder:"Sanjay Malhotra",ring:"G",atype:"Savings Account",os:65,fs:84.5,cl:"SUSPICIOUS",flags:[{f:"Shared IP Address",w:25},{f:"Received money (1 txn)",w:20},{f:"Sent money (1 txn)",w:20}]},
+  {id:"ACC_G2",nt:"account",label:"ACC_G2",holder:"Lalitha Rao",   ring:"G",atype:"UPI ID",         os:65, fs:84.5,cl:"SUSPICIOUS",flags:[{f:"Shared IP Address",w:25},{f:"Received money (2 txn)",w:20},{f:"Sent money (2 txn)",w:20}]},
+  {id:"ACC_G3",nt:"account",label:"ACC_G3",holder:"Mohan Das",     ring:"G",atype:"Digital Wallet", os:65, fs:84.5,cl:"SUSPICIOUS",flags:[{f:"Shared IP Address",w:25},{f:"Received money (1 txn)",w:20},{f:"Sent money (1 txn)",w:20}]},
+  // SUSPICIOUS — F2 (middle of chain, pushed up by contamination)
+  {id:"ACC_F2",nt:"account",label:"ACC_F2",holder:"Deepa Thomas",  ring:"F",atype:"UPI ID",         os:55, fs:65.5,cl:"SUSPICIOUS",flags:[{f:"Shared ATM / Portal",w:15},{f:"Received money (1 txn)",w:20},{f:"Sent money (1 txn)",w:20}],contam_note:true},
+  // WATCH — F1, F3 (end nodes of chain, low contamination)
+  {id:"ACC_F1",nt:"account",label:"ACC_F1",holder:"Amit Singh",    ring:"F",atype:"Savings Account",os:35, fs:48.5,cl:"WATCH",    flags:[{f:"Shared ATM / Portal",w:15},{f:"Sent money (1 txn)",w:20}]},
+  {id:"ACC_F3",nt:"account",label:"ACC_F3",holder:"Kunal Mehta",   ring:"F",atype:"Digital Wallet", os:35, fs:48.5,cl:"WATCH",    flags:[{f:"Shared ATM / Portal",w:15},{f:"Received money (1 txn)",w:20}]},
+  // CLEAN — E cluster (no flags, no transactions)
+  {id:"ACC_E1",nt:"account",label:"ACC_E1",holder:"Priya Menon",   ring:"E",atype:"Savings Account",os:0,  fs:0,   cl:"CLEAN",   flags:[]},
+  {id:"ACC_E2",nt:"account",label:"ACC_E2",holder:"Ravi Kumar",    ring:"E",atype:"UPI ID",         os:0,  fs:0,   cl:"CLEAN",   flags:[]},
+  {id:"ACC_E3",nt:"account",label:"ACC_E3",holder:"Ananya Iyer",   ring:"E",atype:"Digital Wallet", os:0,  fs:0,   cl:"CLEAN",   flags:[]},
+  // Identifiers
+  {id:"192.168.1.1", nt:"identifier",label:"192.168.1.1", itype:"IP"  ,os:0,fs:0,cl:"",flags:[]},
+  {id:"10.0.0.5",    nt:"identifier",label:"10.0.0.5",    itype:"IP"  ,os:0,fs:0,cl:"",flags:[]},
+  {id:"172.16.0.3",  nt:"identifier",label:"172.16.0.3",  itype:"IP"  ,os:0,fs:0,cl:"",flags:[]},
+  {id:"10.0.1.8",    nt:"identifier",label:"10.0.1.8",    itype:"IP"  ,os:0,fs:0,cl:"",flags:[]},
+  {id:"10.2.0.99",   nt:"identifier",label:"10.2.0.99",   itype:"IP"  ,os:0,fs:0,cl:"",flags:[]},
+  {id:"MAC:EE:01",   nt:"identifier",label:"MAC:EE:01",   itype:"MAC" ,os:0,fs:0,cl:"",flags:[]},
+  {id:"MAC:EE:02",   nt:"identifier",label:"MAC:EE:02",   itype:"MAC" ,os:0,fs:0,cl:"",flags:[]},
+  {id:"MAC:EE:03",   nt:"identifier",label:"MAC:EE:03",   itype:"MAC" ,os:0,fs:0,cl:"",flags:[]},
+  {id:"IMEI-7766",   nt:"identifier",label:"IMEI-7766",   itype:"IMEI",os:0,fs:0,cl:"",flags:[]},
+  {id:"IMEI-5544",   nt:"identifier",label:"IMEI-5544",   itype:"IMEI",os:0,fs:0,cl:"",flags:[]},
+  {id:"203.0.113.10",nt:"identifier",label:"203.0.113.10",itype:"IP"  ,os:0,fs:0,cl:"",flags:[]},
+  {id:"203.0.113.20",nt:"identifier",label:"203.0.113.20",itype:"IP"  ,os:0,fs:0,cl:"",flags:[]},
+  {id:"203.0.113.30",nt:"identifier",label:"203.0.113.30",itype:"IP"  ,os:0,fs:0,cl:"",flags:[]},
+  {id:"198.51.100.1",nt:"identifier",label:"198.51.100.1",itype:"IP"  ,os:0,fs:0,cl:"",flags:[]},
+  {id:"198.51.100.2",nt:"identifier",label:"198.51.100.2",itype:"IP"  ,os:0,fs:0,cl:"",flags:[]},
+  {id:"198.51.100.3",nt:"identifier",label:"198.51.100.3",itype:"IP"  ,os:0,fs:0,cl:"",flags:[]},
+  // Touchpoints
+  {id:"ATM_MUM",   nt:"touchpoint",label:"ATM Mumbai",    city:"Mumbai",    os:0,fs:0,cl:"",flags:[]},
+  {id:"ATM_DEL",   nt:"touchpoint",label:"ATM Delhi",     city:"Delhi",     os:0,fs:0,cl:"",flags:[]},
+  {id:"PORTAL_BLR",nt:"touchpoint",label:"Portal BLR",    city:"Bangalore", os:0,fs:0,cl:"",flags:[]},
+  {id:"ATM_HYD",   nt:"touchpoint",label:"ATM Hyderabad", city:"Hyderabad", os:0,fs:0,cl:"",flags:[]},
+  {id:"ATM_CHN",   nt:"touchpoint",label:"ATM Chennai",   city:"Chennai",   os:0,fs:0,cl:"",flags:[]},
+];
+
+const EDGES = [
+  // money_flow
+  {s:"ACC_A1",t:"ACC_A2",et:"money_flow",amt:18000},{s:"ACC_A2",t:"ACC_A3",et:"money_flow",amt:17500},
+  {s:"ACC_A3",t:"ACC_A4",et:"money_flow",amt:17000},{s:"ACC_A4",t:"ACC_A1",et:"money_flow",amt:9500},
+  {s:"ACC_B1",t:"ACC_B2",et:"money_flow",amt:16000},{s:"ACC_B2",t:"ACC_B3",et:"money_flow",amt:15500},
+  {s:"ACC_B3",t:"ACC_B4",et:"money_flow",amt:14000},{s:"ACC_B4",t:"ACC_B1",et:"money_flow",amt:10000},
+  {s:"ACC_C1",t:"ACC_C2",et:"money_flow",amt:14000},{s:"ACC_C2",t:"ACC_C3",et:"money_flow",amt:13500},
+  {s:"ACC_C3",t:"ACC_C4",et:"money_flow",amt:13000},{s:"ACC_C4",t:"ACC_C1",et:"money_flow",amt:7500},
+  {s:"ACC_D1",t:"ACC_D2",et:"money_flow",amt:22000},{s:"ACC_D2",t:"ACC_D3",et:"money_flow",amt:21000},
+  {s:"ACC_F1",t:"ACC_F2",et:"money_flow",amt:5000}, {s:"ACC_F2",t:"ACC_F3",et:"money_flow",amt:4500},
+  {s:"ACC_G1",t:"ACC_G2",et:"money_flow",amt:9000}, {s:"ACC_G2",t:"ACC_G1",et:"money_flow",amt:8000},
+  {s:"ACC_G2",t:"ACC_G3",et:"money_flow",amt:7500}, {s:"ACC_G3",t:"ACC_G2",et:"money_flow",amt:7000},
+  // shared_ip
+  {s:"ACC_A1",t:"ACC_A2",et:"shared_ip"},{s:"ACC_B1",t:"ACC_B2",et:"shared_ip"},
+  {s:"ACC_C1",t:"ACC_C2",et:"shared_ip"},{s:"ACC_D2",t:"ACC_B4",et:"shared_ip"},
+  {s:"ACC_G1",t:"ACC_G2",et:"shared_ip"},{s:"ACC_G1",t:"ACC_G3",et:"shared_ip"},{s:"ACC_G2",t:"ACC_G3",et:"shared_ip"},
+  // shared_device
+  {s:"ACC_A3",t:"ACC_A4",et:"shared_device"},{s:"ACC_B3",t:"ACC_B4",et:"shared_device"},
+  {s:"ACC_C3",t:"ACC_C4",et:"shared_device"},{s:"ACC_D1",t:"ACC_A3",et:"shared_device"},
+  {s:"ACC_D3",t:"ACC_C1",et:"shared_device"},
+  // shared_touchpoint
+  {s:"ACC_A1",t:"ACC_A2",et:"shared_touchpoint"},{s:"ACC_B1",t:"ACC_B3",et:"shared_touchpoint"},
+  {s:"ACC_C1",t:"ACC_C2",et:"shared_touchpoint"},{s:"ACC_D1",t:"ACC_D2",et:"shared_touchpoint"},
+  {s:"ACC_F1",t:"ACC_F2",et:"shared_touchpoint"},{s:"ACC_F1",t:"ACC_F3",et:"shared_touchpoint"},{s:"ACC_F2",t:"ACC_F3",et:"shared_touchpoint"},
+  // uses_identifier / used_touchpoint (structural)
+  {s:"ACC_A1",t:"192.168.1.1",et:"uses_identifier"},{s:"ACC_A2",t:"192.168.1.1",et:"uses_identifier"},
+  {s:"ACC_B1",t:"10.0.0.5",   et:"uses_identifier"},{s:"ACC_B2",t:"10.0.0.5",   et:"uses_identifier"},
+  {s:"ACC_C1",t:"172.16.0.3", et:"uses_identifier"},{s:"ACC_C2",t:"172.16.0.3", et:"uses_identifier"},
+  {s:"ACC_D2",t:"10.0.1.8",   et:"uses_identifier"},{s:"ACC_B4",t:"10.0.1.8",   et:"uses_identifier"},
+  {s:"ACC_A3",t:"MAC:EE:01",  et:"uses_identifier"},{s:"ACC_A4",t:"MAC:EE:01",  et:"uses_identifier"},
+  {s:"ACC_C3",t:"MAC:EE:02",  et:"uses_identifier"},{s:"ACC_C4",t:"MAC:EE:02",  et:"uses_identifier"},
+  {s:"ACC_B3",t:"MAC:EE:03",  et:"uses_identifier"},{s:"ACC_B4",t:"MAC:EE:03",  et:"uses_identifier"},
+  {s:"ACC_D1",t:"IMEI-7766",  et:"uses_identifier"},{s:"ACC_A3",t:"IMEI-7766",  et:"uses_identifier"},
+  {s:"ACC_D3",t:"IMEI-5544",  et:"uses_identifier"},{s:"ACC_C1",t:"IMEI-5544",  et:"uses_identifier"},
+  {s:"ACC_G1",t:"10.2.0.99",  et:"uses_identifier"},{s:"ACC_G2",t:"10.2.0.99",  et:"uses_identifier"},{s:"ACC_G3",t:"10.2.0.99",et:"uses_identifier"},
+  {s:"ACC_E1",t:"203.0.113.10",et:"uses_identifier"},{s:"ACC_E2",t:"203.0.113.20",et:"uses_identifier"},{s:"ACC_E3",t:"203.0.113.30",et:"uses_identifier"},
+  {s:"ACC_F1",t:"198.51.100.1",et:"uses_identifier"},{s:"ACC_F2",t:"198.51.100.2",et:"uses_identifier"},{s:"ACC_F3",t:"198.51.100.3",et:"uses_identifier"},
+  {s:"ACC_A1",t:"ATM_MUM",et:"used_touchpoint"},{s:"ACC_A2",t:"ATM_MUM",et:"used_touchpoint"},
+  {s:"ACC_B1",t:"ATM_DEL",et:"used_touchpoint"},{s:"ACC_B3",t:"ATM_DEL",et:"used_touchpoint"},
+  {s:"ACC_C1",t:"PORTAL_BLR",et:"used_touchpoint"},{s:"ACC_C2",t:"PORTAL_BLR",et:"used_touchpoint"},{s:"ACC_C3",t:"PORTAL_BLR",et:"used_touchpoint"},
+  {s:"ACC_D1",t:"ATM_HYD",et:"used_touchpoint"},{s:"ACC_D2",t:"ATM_HYD",et:"used_touchpoint"},
+  {s:"ACC_F1",t:"ATM_CHN",et:"used_touchpoint"},{s:"ACC_F2",t:"ATM_CHN",et:"used_touchpoint"},{s:"ACC_F3",t:"ATM_CHN",et:"used_touchpoint"},
+];
+
+// color helper
+const ncol = d => {
+  if(d.nt==="identifier") return "#bf7aff";
+  if(d.nt==="touchpoint")  return "#ff8c42";
+  return COLOR[d.cl]||"#888";
+};
+
+// ══ D3 SETUP ══════════════════════════════════════════════════
+const svg  = d3.select("#gs");
+const wrap = document.getElementById("cvs");
+let W=wrap.clientWidth, H=wrap.clientHeight;
+const g = svg.append("g");
+
+const zoom = d3.zoom().scaleExtent([0.15,3]).on("zoom",e=>g.attr("transform",e.transform));
+svg.call(zoom);
+
+const defs = svg.append("defs");
+Object.keys(ECOLOR).forEach(et=>{
+  defs.append("marker").attr("id","arr-"+et).attr("viewBox","0 -4 10 8")
+    .attr("refX",23).attr("refY",0).attr("markerWidth",5).attr("markerHeight",5).attr("orient","auto")
+    .append("path").attr("d","M0,-4L10,0L0,4").attr("fill",ECOLOR[et]);
+});
+const flt = defs.append("filter").attr("id","glow");
+flt.append("feGaussianBlur").attr("stdDeviation","3.5").attr("result","blur");
+const fm = flt.append("feMerge");
+fm.append("feMergeNode").attr("in","blur");
+fm.append("feMergeNode").attr("in","SourceGraphic");
+
+// Prep edge data with source/target refs
+const edgeData = EDGES.map(e=>({...e, source:e.s, target:e.t}));
+
+const sim = d3.forceSimulation(NODES)
+  .force("link",d3.forceLink(edgeData).id(d=>d.id)
+    .distance(d=>d.et==="money_flow"?130:d.et.startsWith("shared")?100:65).strength(0.3))
+  .force("charge",d3.forceManyBody().strength(-480))
+  .force("center",d3.forceCenter(W/2,H/2))
+  .force("collide",d3.forceCollide(26));
+
+// EDGES
+const edgeSel = g.append("g").selectAll("line")
+  .data(edgeData).enter().append("line").attr("class","edge")
+  .attr("data-type",d=>d.et)
+  .attr("stroke",d=>ECOLOR[d.et]||"#333")
+  .attr("stroke-width",d=>EWIDTH[d.et]||1)
+  .attr("stroke-opacity",d=>d.et.startsWith("uses")||d.et.startsWith("used")?0.2:0.55)
+  .attr("stroke-dasharray",d=>d.et.startsWith("uses")||d.et.startsWith("used")?"3,5":"none")
+  .attr("marker-end",d=>`url(#arr-${d.et})`);
+
+// NODES
+const tip = document.getElementById("tip");
+const showTip=(html,x,y)=>{tip.innerHTML=html;tip.style.left=(x+14)+"px";tip.style.top=(y-10)+"px";tip.classList.add("show")};
+const hideTip=()=>tip.classList.remove("show");
+
+const nR = d=>d.nt==="account"?14:d.nt==="identifier"?8:9;
+
+const node = g.append("g").selectAll(".node").data(NODES).enter().append("g").attr("class","node")
+  .call(d3.drag()
+    .on("start",(e,d)=>{if(!e.active)sim.alphaTarget(0.3).restart();d.fx=d.x;d.fy=d.y})
+    .on("drag", (e,d)=>{d.fx=e.x;d.fy=e.y})
+    .on("end",  (e,d)=>{if(!e.active)sim.alphaTarget(0);d.fx=null;d.fy=null}));
+
+// pulse ring for BLOCK
+node.filter(d=>d.cl==="BLOCK").append("circle").attr("r",21)
+  .attr("fill","none").attr("stroke","#ff2244").attr("stroke-width",1).attr("stroke-opacity",0.25)
+  .style("animation","blink 2s infinite");
+
+node.append("circle")
+  .attr("r",nR).attr("fill",d=>ncol(d)+"22").attr("stroke",ncol)
+  .attr("stroke-width",d=>d.nt==="account"?2.5:1.5)
+  .style("filter",d=>d.nt==="account"?"url(#glow)":"none")
+  .on("mouseover",(e,d)=>{
+    const extra = d.nt==="account"
+      ? `<div>Score: <span style="color:${ncol(d)};font-weight:bold">${d.fs}</span>  ·  ${d.cl}</div>`
+      : (d.city?`<div>City: <span style="color:#7dd4fc">${d.city}</span></div>`:"");
+    showTip(`<div style="color:${ncol(d)};font-weight:bold;margin-bottom:4px">${d.id}</div>`
+      +(d.holder?`<div>Holder: <span style="color:#7dd4fc">${d.holder}</span></div>`:"")
+      +extra, e.pageX,e.pageY);
+  })
+  .on("mousemove",e=>{tip.style.left=(e.pageX+14)+"px";tip.style.top=(e.pageY-10)+"px"})
+  .on("mouseout",hideTip)
+  .on("click",(e,d)=>{if(d.nt==="account") showBreakdown(d)});
+
+node.append("text")
+  .attr("dy",d=>nR(d)+10).attr("text-anchor","middle")
+  .style("font-family","Share Tech Mono,monospace").style("font-size","8px")
+  .style("fill",d=>d.nt==="account"?ncol(d)+"cc":"#2a4a6a")
+  .style("pointer-events","none")
+  .text(d=>d.label||d.id.slice(0,11));
+
+sim.on("tick",()=>{
+  edgeSel.attr("x1",d=>d.source.x).attr("y1",d=>d.source.y).attr("x2",d=>d.target.x).attr("y2",d=>d.target.y);
+  node.attr("transform",d=>`translate(${d.x},${d.y})`);
+});
+
+// ══ SCORE BREAKDOWN ══════════════════════════════════════════
+function showBreakdown(d){
+  const sp = document.getElementById("sp");
+  sp.classList.add("lit");
+  const pct = Math.min((d.fs/180.4)*100,100).toFixed(1);
+  const cont = (d.fs - d.os).toFixed(1);
+  const col = ncol(d);
+  const contamWarning = d.contam_note
+    ? `<div style="margin-top:8px;padding:6px 8px;background:rgba(255,140,0,0.08);border:1px solid rgba(255,140,0,0.25);font-size:10px;color:#cc7700">⚡ Contamination pushed this account from WATCH into SUSPICIOUS</div>`
+    : "";
+  sp.innerHTML = `
+    <div style="display:flex;align-items:center;margin-bottom:8px">
+      <div><div class="spname">${d.holder}</div>
+      <div style="color:#4a6a8a;font-size:10px;margin-top:2px">${d.id} · ${d.atype} · Ring ${d.ring}</div></div>
+      <span class="spbadge b-${d.cl}">${d.cl}</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+      <span style="font-size:10px;color:#4a6a8a">Final Risk Score</span>
+      <span class="sfinal" style="color:${col}">${d.fs}</span>
+    </div>
+    <div class="sbar-track"><div class="sbar-fill" style="width:${pct}%;background:${col};box-shadow:0 0 8px ${col}88"></div></div>
+    <div class="snums"><span>0</span><span>Own: ${d.os}</span><span>180</span></div>
+    <div class="fr" style="padding:3px 0;border-bottom:1px dashed #1a3a5c;margin-bottom:4px">
+      <span class="fn" style="color:#3a5a7a;font-size:9px">FLAG</span>
+      <span class="fn" style="color:#3a5a7a;font-size:9px">WEIGHT</span>
+    </div>
+    ${d.flags.map(f=>`<div class="fr"><span class="fn">⚑ ${f.f}</span><span class="fw" style="color:${col}">+${f.w}</span></div>`).join("")}
+    <div class="contamrow"><span>+ Neighbour Contamination (30% bleed)</span><span>+${cont}</span></div>
+    ${contamWarning}
+  `;
+  document.querySelectorAll(".ai").forEach(el=>el.classList.toggle("sel",el.dataset.id===d.id));
+}
+
+// ══ ACCOUNT LIST ══════════════════════════════════════════════
+const accNodes = NODES.filter(n=>n.nt==="account").sort((a,b)=>b.fs-a.fs);
+const al = document.getElementById("al");
+let lastTier = null;
+accNodes.forEach(acc=>{
+  if(acc.cl !== lastTier){
+    lastTier = acc.cl;
+    const sep = document.createElement("div"); sep.className="tier-sep";
+    sep.textContent = {BLOCK:"🔴 BLOCK",SUSPICIOUS:"🟠 SUSPICIOUS",WATCH:"🟡 WATCH",CLEAN:"🟢 CLEAN"}[acc.cl];
+    al.appendChild(sep);
+  }
+  const item = document.createElement("div");
+  item.className="ai"; item.dataset.id=acc.id;
+  item.innerHTML=`<div class="aidot" style="background:${ncol(acc)};box-shadow:0 0 4px ${ncol(acc)}"></div>
+    <span class="ainame">${acc.holder}</span>
+    <span class="aiscore" style="color:${ncol(acc)}">${acc.fs}</span>`;
+  item.addEventListener("click",()=>{
+    showBreakdown(acc);
+    const n=NODES.find(nd=>nd.id===acc.id);
+    if(n&&n.x!=null) svg.transition().duration(650).ease(d3.easeCubicInOut)
+      .call(zoom.transform,d3.zoomIdentity.translate(W/2-n.x*1.5,H/2-n.y*1.5).scale(1.5));
+  });
+  al.appendChild(item);
+});
+
+// ══ TIER FILTER ════════════════════════════════════════════════
+let activeTier = null;
+const hint = document.getElementById("hint");
+const hintLabel = document.getElementById("hint-label");
+
+document.querySelectorAll(".tier-card").forEach(card=>{
+  card.addEventListener("click",()=>{
+    const cls = card.dataset.class;
+    if(activeTier===cls){resetTier();return}
+    activeTier=cls;
+    document.querySelectorAll(".tier-card").forEach(c=>{
+      ["tc-active-clean","tc-active-watch","tc-active-susp","tc-active-block"].forEach(x=>c.classList.remove(x));
+      c.classList.remove("active");
+    });
+    const map={CLEAN:"tc-active-clean",WATCH:"tc-active-watch",SUSPICIOUS:"tc-active-susp",BLOCK:"tc-active-block"};
+    card.classList.add("active",map[cls]);
+
+    const ids=new Set(NODES.filter(n=>n.cl===cls).map(n=>n.id));
+    node.selectAll("circle").classed("dimmed-circle",d=>d.nt==="account"&&!ids.has(d.id));
+    node.selectAll("text").classed("dimmed-text",d=>d.nt==="account"&&!ids.has(d.id));
+    edgeSel.classed("dimmed-edge",d=>{const s=d.source.id||d.s,t=d.target.id||d.t;return !ids.has(s)&&!ids.has(t)});
+    hintLabel.textContent=cls;
+    hint.classList.add("show");
+  });
+});
+
+function resetTier(){
+  activeTier=null;
+  node.selectAll("circle").classed("dimmed-circle",false);
+  node.selectAll("text").classed("dimmed-text",false);
+  edgeSel.classed("dimmed-edge",false);
+  document.querySelectorAll(".tier-card").forEach(c=>{
+    ["tc-active-clean","tc-active-watch","tc-active-susp","tc-active-block"].forEach(x=>c.classList.remove(x));
+    c.classList.remove("active");
+  });
+  hint.classList.remove("show");
+}
+
+svg.on("click",e=>{if(e.target.tagName==="svg")resetTier()});
+
+// ══ EDGE FILTER ════════════════════════════════════════════════
+document.querySelectorAll(".fb").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    document.querySelectorAll(".fb").forEach(b=>b.classList.remove("on"));
+    btn.classList.add("on");
+    const f=btn.dataset.edge;
+    edgeSel.style("display",d=>f==="all"?null:d.et===f?null:"none");
+  });
+});
+
+window.addEventListener("resize",()=>{
+  W=wrap.clientWidth;H=wrap.clientHeight;
+  sim.force("center",d3.forceCenter(W/2,H/2)).alpha(0.1).restart();
+});
+</script>
+</body>
+</html>

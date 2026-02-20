@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fraud Graph — Identity-Agnostic Engine</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@300;600;800;900&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #040a12;
+    --panel: #060d1a;
+    --border: #0e2240;
+    --accent: #00e5ff;
+    --warn: #ff4060;
+    --money: #ffd700;
+    --device: #bf7aff;
+    --ip: #00cfff;
+    --touch: #ff8c42;
+    --node-acct: #00e5ff;
+    --node-id: #bf7aff;
+    --node-tp: #ff8c42;
+    --mono: 'Share Tech Mono', monospace;
+    --display: 'Barlow Condensed', sans-serif;
+  }
+
+  body {
+    background: var(--bg);
+    color: #c8e0ff;
+    font-family: var(--mono);
+    height: 100vh;
+    overflow: hidden;
+    display: grid;
+    grid-template-rows: 58px 1fr;
+    grid-template-columns: 270px 1fr 270px;
+  }
+
+  /* ── HEADER ── */
+  header {
+    grid-column: 1 / -1;
+    background: linear-gradient(90deg, #07121f 0%, #0a1828 50%, #07121f 100%);
+    border-bottom: 2px solid #1a3a5c;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    gap: 14px;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(90deg, transparent, transparent 120px, rgba(0,229,255,0.015) 120px, rgba(0,229,255,0.015) 121px);
+    pointer-events: none;
+  }
+  .logo-dot {
+    width: 11px; height: 11px;
+    border-radius: 50%;
+    background: var(--warn);
+    box-shadow: 0 0 14px var(--warn), 0 0 28px rgba(255,64,96,0.4);
+    animation: pulse 1.4s infinite;
+    flex-shrink: 0;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.25} }
+  header h1 {
+    font-family: var(--display);
+    font-weight: 900;
+    font-size: 22px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: #ffffff;
+    text-shadow: 0 0 20px rgba(0,229,255,0.4);
+  }
+  header h1 span { color: var(--warn); text-shadow: 0 0 20px rgba(255,64,96,0.6); }
+  .header-tag { margin-left: auto; font-size: 9px; color: #2a5a80; letter-spacing: 2.5px; text-transform: uppercase; }
+  .header-badge {
+    background: rgba(255,64,96,0.12);
+    border: 1px solid var(--warn);
+    color: var(--warn);
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    padding: 3px 8px;
+    text-transform: uppercase;
+    animation: pulse 2s infinite;
+  }
+
+  /* ── PANELS ── */
+  .panel-left, .panel-right {
+    background: var(--panel);
+    padding: 14px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .panel-left { border-right: 1px solid var(--border); }
+  .panel-right { border-left: 1px solid var(--border); }
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #1a3a5c; border-radius: 2px; }
+
+  /* ── SECTION LABELS (HEADINGS) — bright sky-blue, high contrast ── */
+  .section-label {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: 12px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #7dd4fc;
+    margin-bottom: 9px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #1a3a5c;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-label::before {
+    content: '';
+    display: inline-block;
+    width: 3px; height: 13px;
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+    flex-shrink: 0;
+    border-radius: 1px;
+  }
+
+  /* ── STATS ── */
+  .stat-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 5px 0; border-bottom: 1px solid #0a1828;
+    font-size: 11px; color: #6a90b0;
+  }
+  .stat-val { color: var(--accent); font-weight: bold; font-size: 15px; }
+  .stat-val.warn { color: var(--warn); text-shadow: 0 0 8px rgba(255,64,96,0.4); }
+
+  /* ── LEGEND ── */
+  .legend-item { display: flex; align-items: center; gap: 8px; font-size: 10px; padding: 3px 0; color: #7a9ab8; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .legend-line { width: 22px; height: 2px; flex-shrink: 0; }
+
+  /* ── RING BADGES ── */
+  .ring-badge {
+    border-radius: 2px; padding: 8px 10px; font-size: 10px; line-height: 1.85; margin-bottom: 4px;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+    position: relative;
+  }
+  .ring-badge:hover { transform: translateX(3px); }
+  .ring-badge::after {
+    content: '⟶ ZOOM IN';
+    position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+    font-size: 8px; letter-spacing: 1.5px; opacity: 0;
+    transition: opacity 0.2s;
+    font-family: var(--mono);
+  }
+  .ring-badge:hover::after { opacity: 0.7; }
+  .ring-badge.active-ring { transform: translateX(4px); }
+
+  .ring-badge .rb-head { font-family: var(--display); font-size: 13px; font-weight: 800; letter-spacing: 2px; margin-bottom: 4px; }
+  .ring-badge .rb-members { color: #8aacc8; }
+  .ring-badge .rb-detail  { color: #4a6a8a; }
+
+  .ring-A { background: rgba(255,64,96,0.07);   border: 1px solid rgba(255,64,96,0.45); }
+  .ring-A .rb-head { color: #ff7090; }
+  .ring-A::after { color: #ff7090; }
+  .ring-A.active-ring { background: rgba(255,64,96,0.14); border-color: #ff4060; box-shadow: 0 0 14px rgba(255,64,96,0.2); }
+
+  .ring-B { background: rgba(255,140,66,0.07);  border: 1px solid rgba(255,140,66,0.45); }
+  .ring-B .rb-head { color: #ffaa60; }
+  .ring-B::after { color: #ffaa60; }
+  .ring-B.active-ring { background: rgba(255,140,66,0.14); border-color: #ff8c42; box-shadow: 0 0 14px rgba(255,140,66,0.2); }
+
+  .ring-C { background: rgba(191,122,255,0.07); border: 1px solid rgba(191,122,255,0.45); }
+  .ring-C .rb-head { color: #cf9aff; }
+  .ring-C::after { color: #cf9aff; }
+  .ring-C.active-ring { background: rgba(191,122,255,0.14); border-color: #bf7aff; box-shadow: 0 0 14px rgba(191,122,255,0.2); }
+
+  .ring-D { background: rgba(0,229,255,0.06);   border: 1px solid rgba(0,229,255,0.3); }
+  .ring-D .rb-head { color: #60e8ff; }
+  .ring-D::after { color: #60e8ff; }
+  .ring-D.active-ring { background: rgba(0,229,255,0.12); border-color: #00e5ff; box-shadow: 0 0 14px rgba(0,229,255,0.2); }
+
+  /* ── FILTER BUTTONS ── */
+  .filter-btn {
+    background: none; border: 1px solid #0e2240; color: #4a6a8a;
+    font-family: var(--mono); font-size: 10px; letter-spacing: 1px;
+    padding: 5px 10px; cursor: pointer; transition: all 0.15s;
+    display: flex; align-items: center; gap: 7px;
+    width: 100%; margin-bottom: 4px; text-transform: uppercase;
+  }
+  .filter-btn:hover, .filter-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(0,229,255,0.05); }
+  .filter-btn .fb-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+  /* ── CANVAS ── */
+  #canvas-wrap {
+    position: relative;
+    background: radial-gradient(ellipse at center, #060f1e 0%, #020609 100%);
+    overflow: hidden;
+  }
+  svg { width: 100%; height: 100%; }
+  #canvas-wrap::after {
+    content: ''; position: absolute; inset: 0;
+    background: repeating-linear-gradient(to bottom, transparent 0px, transparent 3px, rgba(0,0,0,0.06) 3px, rgba(0,0,0,0.06) 4px);
+    pointer-events: none; z-index: 10;
+  }
+
+  /* ── NODE INFO ── */
+  #node-info {
+    border: 1px solid var(--border); padding: 12px; border-radius: 2px;
+    font-size: 11px; line-height: 1.9; min-height: 110px;
+    background: #030810; transition: border-color 0.2s;
+  }
+  #node-info.active { border-color: var(--accent); box-shadow: 0 0 12px rgba(0,229,255,0.08); }
+  .info-key { color: #2a5a7a; font-size: 10px; }
+  .info-val { color: #7dd4fc; }
+
+  /* ── RING ZOOM OVERLAY ── */
+  .node circle.dimmed { opacity: 0.12; }
+  .node text.dimmed   { opacity: 0.08; }
+  line.edge.dimmed    { opacity: 0.04; }
+  line.edge.highlighted { stroke-opacity: 0.9 !important; }
+
+  /* zoom hint banner */
+  #zoom-hint {
+    position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
+    background: #060d1a; border: 1px solid #1a3a5c;
+    padding: 6px 16px; font-size: 10px; color: #3a6a9a;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    pointer-events: none; z-index: 15;
+    opacity: 0; transition: opacity 0.3s;
+  }
+  #zoom-hint.show { opacity: 1; }
+  #zoom-hint span { color: #7dd4fc; }
+  #tooltip {
+    position: absolute; background: #050d1a; border: 1px solid var(--accent);
+    padding: 8px 12px; font-size: 10px; pointer-events: none;
+    opacity: 0; transition: opacity 0.15s; line-height: 1.8; z-index: 20;
+    box-shadow: 0 0 20px rgba(0,229,255,0.1);
+  }
+  #tooltip.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-dot"></div>
+  <h1>MULE <span>GRAPH</span> DETECTOR</h1>
+  <span class="header-badge">4 rings detected</span>
+  <span class="header-tag">Identity-Agnostic Network Analysis // Phase 1</span>
+</header>
+
+<aside class="panel-left">
+  <div>
+    <div class="section-label">Graph Statistics</div>
+    <div class="stat-row"><span>Total Nodes</span><span class="stat-val" id="s-nodes">—</span></div>
+    <div class="stat-row"><span>Total Edges</span><span class="stat-val" id="s-edges">—</span></div>
+    <div class="stat-row"><span>Account Nodes</span><span class="stat-val" id="s-acct">—</span></div>
+    <div class="stat-row"><span>Identifier Nodes</span><span class="stat-val" id="s-ident">—</span></div>
+    <div class="stat-row"><span>Touchpoints</span><span class="stat-val" id="s-touch">—</span></div>
+    <div class="stat-row"><span>Fraud Rings</span><span class="stat-val warn" id="s-clusters">—</span></div>
+  </div>
+
+  <div>
+    <div class="section-label">Node Types</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#00e5ff;box-shadow:0 0 6px #00e5ff"></div>Account (Savings / UPI / Wallet)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#bf7aff;box-shadow:0 0 6px #bf7aff"></div>Physical Identifier (IP / Device)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#ff8c42;box-shadow:0 0 6px #ff8c42"></div>Touchpoint (ATM / Portal)</div>
+  </div>
+
+  <div>
+    <div class="section-label">Edge Types</div>
+    <div class="legend-item"><div class="legend-line" style="background:#ffd700"></div>money_flow</div>
+    <div class="legend-item"><div class="legend-line" style="background:#00cfff"></div>shared_ip</div>
+    <div class="legend-item"><div class="legend-line" style="background:#bf7aff"></div>shared_device</div>
+    <div class="legend-item"><div class="legend-line" style="background:#ff8c42"></div>shared_touchpoint</div>
+    <div class="legend-item"><div class="legend-line" style="background:#1a3a5c;height:1px;border-top:1px dashed #1a3a5c"></div>structural (uses_*)</div>
+  </div>
+
+  <div>
+    <div class="section-label">Filter Edges</div>
+    <button class="filter-btn active" data-edge="all"><div class="fb-dot" style="background:#fff"></div>Show All</button>
+    <button class="filter-btn" data-edge="money_flow"><div class="fb-dot" style="background:#ffd700"></div>Money Flow</button>
+    <button class="filter-btn" data-edge="shared_ip"><div class="fb-dot" style="background:#00cfff"></div>Shared IP</button>
+    <button class="filter-btn" data-edge="shared_device"><div class="fb-dot" style="background:#bf7aff"></div>Shared Device</button>
+    <button class="filter-btn" data-edge="shared_touchpoint"><div class="fb-dot" style="background:#ff8c42"></div>Shared Touchpoint</button>
+  </div>
+</aside>
+
+<main id="canvas-wrap">
+  <svg id="graph-svg"></svg>
+  <div id="tooltip"></div>
+  <div id="zoom-hint">Viewing <span id="zoom-hint-label">Ring A</span> — click canvas to reset</div>
+</main>
+
+<aside class="panel-right">
+  <div>
+    <div class="section-label">Selected Node</div>
+    <div id="node-info"><span style="color:#1e3a5a">Click any node to inspect...</span></div>
+  </div>
+
+  <div>
+    <div class="section-label">Detected Rings</div>
+
+    <div class="ring-badge ring-A" data-ring="A">
+      <div class="rb-head">⚠ Ring A — Mumbai UPI Syndicate</div>
+      <div class="rb-members">Arjun Mehta · Sunita Rao · Vikram Desai · Kavitha Nair</div>
+      <div class="rb-detail">Shared IP: 192.168.1.1 · ATM_MUM_001 · ₹62,000</div>
+    </div>
+
+    <div class="ring-badge ring-B" data-ring="B">
+      <div class="rb-head">⚠ Ring B — Delhi Wallet Chain</div>
+      <div class="rb-members">Rohan Sharma · Pooja Verma · Anil Gupta · Meera Joshi</div>
+      <div class="rb-detail">Shared MAC:EE:03 · ATM_DEL_007 · ₹55,500</div>
+    </div>
+
+    <div class="ring-badge ring-C" data-ring="C">
+      <div class="rb-head">⚠ Ring C — Bangalore Portal Fraud</div>
+      <div class="rb-members">Suresh Pillai · Divya Krishnan · Karthik Iyer · Preethi Nair</div>
+      <div class="rb-detail">Shared IP: 172.16.0.3 · PORTAL_BLR · ₹48,000</div>
+    </div>
+
+    <div class="ring-badge ring-D" data-ring="D">
+      <div class="rb-head">⚠ Ring D — Cross-City Bridge</div>
+      <div class="rb-members">Neeraj Kapoor · Shalini Bose · Tarun Saxena</div>
+      <div class="rb-detail">IMEI-7766 bridges Ring A ↔ C · IMEI-5544 bridges Ring C · ₹43,000</div>
+    </div>
+  </div>
+
+  <div>
+    <div class="section-label">Controls</div>
+    <div style="font-size:10px;color:#3a5a80;line-height:2.2">
+      <div>🖱 Drag nodes to reposition</div>
+      <div>🖱 Scroll to zoom in / out</div>
+      <div>🖱 Click node to inspect</div>
+      <div>🔘 Use filters to isolate edges</div>
+    </div>
+  </div>
+</aside>
+
+<script>
+const ringColors = { A:"#ff4060", B:"#ff8c42", C:"#bf7aff", D:"#00e5ff" };
+
+const graphData = {
+  nodes: [
+    // Ring A
+    {id:"ACC_A1",node_type:"account",label:"ACC_A1",account_type:"UPI ID",         holder:"Arjun Mehta",    ring:"A"},
+    {id:"ACC_A2",node_type:"account",label:"ACC_A2",account_type:"Savings Account",holder:"Sunita Rao",     ring:"A"},
+    {id:"ACC_A3",node_type:"account",label:"ACC_A3",account_type:"Digital Wallet", holder:"Vikram Desai",   ring:"A"},
+    {id:"ACC_A4",node_type:"account",label:"ACC_A4",account_type:"UPI ID",         holder:"Kavitha Nair",   ring:"A"},
+    // Ring B
+    {id:"ACC_B1",node_type:"account",label:"ACC_B1",account_type:"Digital Wallet", holder:"Rohan Sharma",   ring:"B"},
+    {id:"ACC_B2",node_type:"account",label:"ACC_B2",account_type:"Savings Account",holder:"Pooja Verma",    ring:"B"},
+    {id:"ACC_B3",node_type:"account",label:"ACC_B3",account_type:"UPI ID",         holder:"Anil Gupta",     ring:"B"},
+    {id:"ACC_B4",node_type:"account",label:"ACC_B4",account_type:"Digital Wallet", holder:"Meera Joshi",    ring:"B"},
+    // Ring C
+    {id:"ACC_C1",node_type:"account",label:"ACC_C1",account_type:"Savings Account",holder:"Suresh Pillai",  ring:"C"},
+    {id:"ACC_C2",node_type:"account",label:"ACC_C2",account_type:"UPI ID",         holder:"Divya Krishnan", ring:"C"},
+    {id:"ACC_C3",node_type:"account",label:"ACC_C3",account_type:"Digital Wallet", holder:"Karthik Iyer",   ring:"C"},
+    {id:"ACC_C4",node_type:"account",label:"ACC_C4",account_type:"Savings Account",holder:"Preethi Nair",   ring:"C"},
+    // Ring D
+    {id:"ACC_D1",node_type:"account",label:"ACC_D1",account_type:"Savings Account",holder:"Neeraj Kapoor",  ring:"D"},
+    {id:"ACC_D2",node_type:"account",label:"ACC_D2",account_type:"UPI ID",         holder:"Shalini Bose",   ring:"D"},
+    {id:"ACC_D3",node_type:"account",label:"ACC_D3",account_type:"Digital Wallet", holder:"Tarun Saxena",   ring:"D"},
+    // Identifiers
+    {id:"IP_192",    node_type:"identifier",label:"192.168.1.1",  identifier_type:"IP Address"},
+    {id:"IP_10",     node_type:"identifier",label:"10.0.0.5",     identifier_type:"IP Address"},
+    {id:"IP_172",    node_type:"identifier",label:"172.16.0.3",   identifier_type:"IP Address"},
+    {id:"IP_10_2",   node_type:"identifier",label:"10.0.1.8",     identifier_type:"IP Address"},
+    {id:"MAC_01",    node_type:"identifier",label:"MAC:EE:01",    identifier_type:"Device MAC"},
+    {id:"MAC_02",    node_type:"identifier",label:"MAC:EE:02",    identifier_type:"Device MAC"},
+    {id:"MAC_03",    node_type:"identifier",label:"MAC:EE:03",    identifier_type:"Device MAC"},
+    {id:"IMEI_7766", node_type:"identifier",label:"IMEI-7766",    identifier_type:"IMEI"},
+    {id:"IMEI_5544", node_type:"identifier",label:"IMEI-5544",    identifier_type:"IMEI"},
+    // Touchpoints
+    {id:"ATM_MUM",   node_type:"touchpoint",label:"ATM Mumbai",    touchpoint_type:"ATM Location",city:"Mumbai"},
+    {id:"ATM_DEL",   node_type:"touchpoint",label:"ATM Delhi",     touchpoint_type:"ATM Location",city:"Delhi"},
+    {id:"PORTAL_BLR",node_type:"touchpoint",label:"Portal BLR",    touchpoint_type:"Web Portal",  city:"Bangalore"},
+    {id:"ATM_HYD",   node_type:"touchpoint",label:"ATM Hyderabad", touchpoint_type:"ATM Location",city:"Hyderabad"},
+  ],
+  edges: [
+    // Ring A money
+    {source:"ACC_A1",target:"ACC_A2",edge_type:"money_flow",amount:18000},
+    {source:"ACC_A2",target:"ACC_A3",edge_type:"money_flow",amount:17500},
+    {source:"ACC_A3",target:"ACC_A4",edge_type:"money_flow",amount:17000},
+    {source:"ACC_A4",target:"ACC_A1",edge_type:"money_flow",amount:9500},
+    // Ring A identity
+    {source:"ACC_A1",target:"IP_192",    edge_type:"uses_ip"},
+    {source:"ACC_A2",target:"IP_192",    edge_type:"uses_ip"},
+    {source:"ACC_A1",target:"ACC_A2",    edge_type:"shared_ip"},
+    {source:"ACC_A3",target:"MAC_01",    edge_type:"uses_device"},
+    {source:"ACC_A4",target:"MAC_01",    edge_type:"uses_device"},
+    {source:"ACC_A3",target:"ACC_A4",    edge_type:"shared_device"},
+    {source:"ACC_A1",target:"ATM_MUM",   edge_type:"used_touchpoint"},
+    {source:"ACC_A2",target:"ATM_MUM",   edge_type:"used_touchpoint"},
+    {source:"ACC_A1",target:"ACC_A2",    edge_type:"shared_touchpoint"},
+
+    // Ring B money
+    {source:"ACC_B1",target:"ACC_B2",edge_type:"money_flow",amount:16000},
+    {source:"ACC_B2",target:"ACC_B3",edge_type:"money_flow",amount:15500},
+    {source:"ACC_B3",target:"ACC_B4",edge_type:"money_flow",amount:14000},
+    {source:"ACC_B4",target:"ACC_B1",edge_type:"money_flow",amount:10000},
+    // Ring B identity
+    {source:"ACC_B1",target:"IP_10",     edge_type:"uses_ip"},
+    {source:"ACC_B2",target:"IP_10",     edge_type:"uses_ip"},
+    {source:"ACC_B1",target:"ACC_B2",    edge_type:"shared_ip"},
+    {source:"ACC_B3",target:"MAC_03",    edge_type:"uses_device"},
+    {source:"ACC_B4",target:"MAC_03",    edge_type:"uses_device"},
+    {source:"ACC_B3",target:"ACC_B4",    edge_type:"shared_device"},
+    {source:"ACC_B1",target:"ATM_DEL",   edge_type:"used_touchpoint"},
+    {source:"ACC_B3",target:"ATM_DEL",   edge_type:"used_touchpoint"},
+    {source:"ACC_B1",target:"ACC_B3",    edge_type:"shared_touchpoint"},
+
+    // Ring C money
+    {source:"ACC_C1",target:"ACC_C2",edge_type:"money_flow",amount:14000},
+    {source:"ACC_C2",target:"ACC_C3",edge_type:"money_flow",amount:13500},
+    {source:"ACC_C3",target:"ACC_C4",edge_type:"money_flow",amount:13000},
+    {source:"ACC_C4",target:"ACC_C1",edge_type:"money_flow",amount:7500},
+    // Ring C identity
+    {source:"ACC_C1",target:"IP_172",    edge_type:"uses_ip"},
+    {source:"ACC_C2",target:"IP_172",    edge_type:"uses_ip"},
+    {source:"ACC_C1",target:"ACC_C2",    edge_type:"shared_ip"},
+    {source:"ACC_C3",target:"MAC_02",    edge_type:"uses_device"},
+    {source:"ACC_C4",target:"MAC_02",    edge_type:"uses_device"},
+    {source:"ACC_C3",target:"ACC_C4",    edge_type:"shared_device"},
+    {source:"ACC_C1",target:"PORTAL_BLR",edge_type:"used_touchpoint"},
+    {source:"ACC_C2",target:"PORTAL_BLR",edge_type:"used_touchpoint"},
+    {source:"ACC_C3",target:"PORTAL_BLR",edge_type:"used_touchpoint"},
+    {source:"ACC_C1",target:"ACC_C2",    edge_type:"shared_touchpoint"},
+
+    // Ring D money
+    {source:"ACC_D1",target:"ACC_D2",edge_type:"money_flow",amount:22000},
+    {source:"ACC_D2",target:"ACC_D3",edge_type:"money_flow",amount:21000},
+    // Ring D bridges
+    {source:"ACC_D1",target:"IMEI_7766", edge_type:"uses_device"},
+    {source:"ACC_A3",target:"IMEI_7766", edge_type:"uses_device"},
+    {source:"ACC_D1",target:"ACC_A3",    edge_type:"shared_device"},
+    {source:"ACC_D3",target:"IMEI_5544", edge_type:"uses_device"},
+    {source:"ACC_C1",target:"IMEI_5544", edge_type:"uses_device"},
+    {source:"ACC_D3",target:"ACC_C1",    edge_type:"shared_device"},
+    {source:"ACC_D2",target:"IP_10_2",   edge_type:"uses_ip"},
+    {source:"ACC_B4",target:"IP_10_2",   edge_type:"uses_ip"},
+    {source:"ACC_D2",target:"ACC_B4",    edge_type:"shared_ip"},
+    {source:"ACC_D1",target:"ATM_HYD",   edge_type:"used_touchpoint"},
+    {source:"ACC_D2",target:"ATM_HYD",   edge_type:"used_touchpoint"},
+    {source:"ACC_D1",target:"ACC_D2",    edge_type:"shared_touchpoint"},
+  ]
+};
+
+// Colors
+const nodeCol = d => {
+  if (d.node_type === 'account')    return ringColors[d.ring] || '#00e5ff';
+  if (d.node_type === 'identifier') return '#bf7aff';
+  return '#ff8c42';
+};
+const edgeColor = {
+  money_flow:'#ffd700', shared_ip:'#00cfff', shared_device:'#bf7aff',
+  shared_touchpoint:'#ff8c42', uses_ip:'#0a1e35', uses_device:'#180e35', used_touchpoint:'#251200'
+};
+const edgeWidth = { money_flow:2.5, shared_ip:2, shared_device:2, shared_touchpoint:2, uses_ip:1, uses_device:1, used_touchpoint:1 };
+
+// Stats
+document.getElementById('s-nodes').textContent    = graphData.nodes.length;
+document.getElementById('s-edges').textContent    = graphData.edges.length;
+document.getElementById('s-acct').textContent     = graphData.nodes.filter(n=>n.node_type==='account').length;
+document.getElementById('s-ident').textContent    = graphData.nodes.filter(n=>n.node_type==='identifier').length;
+document.getElementById('s-touch').textContent    = graphData.nodes.filter(n=>n.node_type==='touchpoint').length;
+document.getElementById('s-clusters').textContent = '4 ⚠';
+
+// D3
+const svg  = d3.select('#graph-svg');
+const wrap = document.getElementById('canvas-wrap');
+let W = wrap.clientWidth, H = wrap.clientHeight;
+const g = svg.append('g');
+
+const defs = svg.append('defs');
+Object.keys(edgeColor).forEach(type => {
+  defs.append('marker').attr('id','arrow-'+type)
+    .attr('viewBox','0 -4 10 8').attr('refX',22).attr('refY',0)
+    .attr('markerWidth',5).attr('markerHeight',5).attr('orient','auto')
+    .append('path').attr('d','M0,-4L10,0L0,4').attr('fill', edgeColor[type]);
+});
+
+const sim = d3.forceSimulation(graphData.nodes)
+  .force('link', d3.forceLink(graphData.edges).id(d=>d.id)
+    .distance(d => d.edge_type==='money_flow'?130:d.edge_type.startsWith('shared')?100:72).strength(0.35))
+  .force('charge', d3.forceManyBody().strength(-450))
+  .force('center', d3.forceCenter(W/2,H/2))
+  .force('collision', d3.forceCollide(28));
+
+let edgeSel = g.append('g').selectAll('line')
+  .data(graphData.edges).enter().append('line')
+  .attr('class','edge')
+  .attr('data-type', d=>d.edge_type)
+  .attr('stroke', d=>edgeColor[d.edge_type]||'#333')
+  .attr('stroke-width', d=>edgeWidth[d.edge_type]||1)
+  .attr('stroke-opacity', d=>d.edge_type.startsWith('uses')||d.edge_type.startsWith('used')?0.3:0.65)
+  .attr('stroke-dasharray', d=>d.edge_type.startsWith('uses')||d.edge_type.startsWith('used')?'3,4':'none')
+  .attr('marker-end', d=>`url(#arrow-${d.edge_type})`);
+
+const tooltip = document.getElementById('tooltip');
+const showTip = (html,x,y) => { tooltip.innerHTML=html; tooltip.style.left=(x+14)+'px'; tooltip.style.top=(y-10)+'px'; tooltip.classList.add('show'); };
+const hideTip = () => tooltip.classList.remove('show');
+
+const nodeR = d => d.node_type==='account'?13:d.node_type==='identifier'?9:10;
+
+const node = g.append('g').selectAll('.node')
+  .data(graphData.nodes).enter().append('g').attr('class','node')
+  .call(d3.drag()
+    .on('start',(e,d)=>{ if(!e.active) sim.alphaTarget(0.3).restart(); d.fx=d.x; d.fy=d.y; })
+    .on('drag', (e,d)=>{ d.fx=e.x; d.fy=e.y; })
+    .on('end',  (e,d)=>{ if(!e.active) sim.alphaTarget(0); d.fx=null; d.fy=null; }));
+
+node.append('circle')
+  .attr('r', nodeR)
+  .attr('fill', d => nodeCol(d)+'22')
+  .attr('stroke', nodeCol)
+  .attr('stroke-width', 2)
+  .style('filter', d => `drop-shadow(0 0 7px ${nodeCol(d)}99)`)
+  .on('mouseover',(e,d)=>showTip(
+    `<div style="color:${nodeCol(d)};font-weight:bold;margin-bottom:4px;font-size:11px">${d.id}</div>`+
+    `<div>Type: <span style="color:#8aacc8">${d.node_type}</span></div>`+
+    (d.holder?`<div>Holder: <span style="color:#7dd4fc">${d.holder}</span></div>`:'')+
+    (d.account_type?`<div>Account: <span style="color:#7dd4fc">${d.account_type}</span></div>`:'')+
+    (d.identifier_type?`<div>Identifier: <span style="color:#7dd4fc">${d.identifier_type}</span></div>`:'')+
+    (d.ring?`<div>Ring: <span style="color:${ringColors[d.ring]}">Ring ${d.ring}</span></div>`:'')+
+    (d.city?`<div>City: <span style="color:#7dd4fc">${d.city}</span></div>`:''),
+    e.pageX,e.pageY))
+  .on('mousemove',e=>{ tooltip.style.left=(e.pageX+14)+'px'; tooltip.style.top=(e.pageY-10)+'px'; })
+  .on('mouseout', hideTip)
+  .on('click',(e,d)=>{
+    const info = document.getElementById('node-info');
+    info.classList.add('active');
+    const conns = graphData.edges.filter(ed=>(ed.source.id||ed.source)===d.id||(ed.target.id||ed.target)===d.id);
+    info.innerHTML=
+      `<div class="info-key">ID</div><div class="info-val">${d.id}</div>`+
+      `<div class="info-key">Type</div><div class="info-val">${d.node_type}</div>`+
+      (d.holder?`<div class="info-key">Holder</div><div class="info-val" style="color:#7dd4fc">${d.holder}</div>`:'')+
+      (d.account_type?`<div class="info-key">Account</div><div class="info-val">${d.account_type}</div>`:'')+
+      (d.identifier_type?`<div class="info-key">Identifier</div><div class="info-val">${d.identifier_type}</div>`:'')+
+      (d.ring?`<div class="info-key">Fraud Ring</div><div class="info-val" style="color:${ringColors[d.ring]}">Ring ${d.ring}</div>`:'')+
+      (d.city?`<div class="info-key">City</div><div class="info-val">${d.city}</div>`:'')+
+      `<div class="info-key">Connections</div><div class="info-val">${conns.length}</div>`;
+  });
+
+node.append('text')
+  .attr('dy', d=>nodeR(d)+10).attr('text-anchor','middle')
+  .style('font-family','Share Tech Mono,monospace').style('font-size','8px')
+  .style('fill','#5a7a9a').style('pointer-events','none')
+  .text(d=>d.label||d.id.slice(0,10));
+
+sim.on('tick',()=>{
+  edgeSel.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y).attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
+  node.attr('transform',d=>`translate(${d.x},${d.y})`);
+});
+
+document.querySelectorAll('.filter-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    const f = btn.dataset.edge;
+    edgeSel.style('display',d=>f==='all'?null:d.edge_type===f?null:'none');
+  });
+});
+
+window.addEventListener('resize',()=>{
+  W=wrap.clientWidth; H=wrap.clientHeight;
+  sim.force('center',d3.forceCenter(W/2,H/2)).alpha(0.1).restart();
+});
+
+// ── RING ZOOM LOGIC ──
+const zoomBehavior = d3.zoom().scaleExtent([0.2,3]).on('zoom', e => g.attr('transform', e.transform));
+svg.call(zoomBehavior);
+
+let activeRing = null;
+const hint = document.getElementById('zoom-hint');
+const hintLabel = document.getElementById('zoom-hint-label');
+
+// Which nodes belong to each ring (accounts + their directly connected identifiers/touchpoints)
+function getRingNodeIds(ring) {
+  const accountIds = new Set(graphData.nodes.filter(n => n.ring === ring).map(n => n.id));
+  const related = new Set(accountIds);
+  // pull in identifier & touchpoint nodes connected to this ring's accounts
+  graphData.edges.forEach(e => {
+    const s = e.source.id || e.source;
+    const t = e.target.id || e.target;
+    if (accountIds.has(s)) related.add(t);
+    if (accountIds.has(t)) related.add(s);
+  });
+  return related;
+}
+
+function zoomToRing(ring) {
+  activeRing = ring;
+  const ringIds = getRingNodeIds(ring);
+
+  // Highlight / dim nodes
+  node.selectAll('circle')
+    .classed('dimmed', d => !ringIds.has(d.id))
+    .attr('stroke-width', d => ringIds.has(d.id) ? 2.5 : 1);
+  node.selectAll('text')
+    .classed('dimmed', d => !ringIds.has(d.id));
+
+  // Highlight / dim edges
+  edgeSel
+    .classed('dimmed', d => {
+      const s = d.source.id || d.source;
+      const t = d.target.id || d.target;
+      return !ringIds.has(s) && !ringIds.has(t);
+    })
+    .classed('highlighted', d => {
+      const s = d.source.id || d.source;
+      const t = d.target.id || d.target;
+      return ringIds.has(s) || ringIds.has(t);
+    });
+
+  // Compute bounding box of ring nodes (wait a tick for positions to exist)
+  requestAnimationFrame(() => {
+    const ringNodes = graphData.nodes.filter(n => ringIds.has(n.id)).filter(n => n.x != null);
+    if (!ringNodes.length) return;
+
+    const xs = ringNodes.map(n => n.x);
+    const ys = ringNodes.map(n => n.y);
+    const x0 = Math.min(...xs), x1 = Math.max(...xs);
+    const y0 = Math.min(...ys), y1 = Math.max(...ys);
+
+    const padding = 90;
+    const bw = x1 - x0 + padding * 2;
+    const bh = y1 - y0 + padding * 2;
+    const scale = Math.min(W / bw, H / bh, 2.2);
+    const tx = W / 2 - scale * ((x0 + x1) / 2);
+    const ty = H / 2 - scale * ((y0 + y1) / 2);
+
+    svg.transition().duration(750).ease(d3.easeCubicInOut)
+      .call(zoomBehavior.transform, d3.zoomIdentity.translate(tx, ty).scale(scale));
+  });
+
+  // Badge highlight
+  document.querySelectorAll('.ring-badge').forEach(b => b.classList.remove('active-ring'));
+  document.querySelector(`.ring-${ring}`).classList.add('active-ring');
+
+  // Hint banner
+  const names = { A:'Ring A — Mumbai', B:'Ring B — Delhi', C:'Ring C — Bangalore', D:'Ring D — Bridge' };
+  hintLabel.textContent = names[ring];
+  hint.classList.add('show');
+}
+
+function resetView() {
+  activeRing = null;
+
+  node.selectAll('circle').classed('dimmed', false).attr('stroke-width', 2);
+  node.selectAll('text').classed('dimmed', false);
+  edgeSel.classed('dimmed', false).classed('highlighted', false);
+
+  document.querySelectorAll('.ring-badge').forEach(b => b.classList.remove('active-ring'));
+  hint.classList.remove('show');
+
+  svg.transition().duration(600).ease(d3.easeCubicInOut)
+    .call(zoomBehavior.transform, d3.zoomIdentity.translate(W/2 - W/2, H/2 - H/2).scale(1));
+}
+
+// Attach ring badge click handlers
+document.querySelectorAll('.ring-badge').forEach(badge => {
+  badge.addEventListener('click', () => {
+    const ring = badge.dataset.ring;
+    if (activeRing === ring) { resetView(); return; }
+    zoomToRing(ring);
+  });
+});
+
+// Click on canvas background to reset
+svg.on('click', (e) => {
+  if (e.target.tagName === 'svg' || e.target.tagName === 'rect') resetView();
+});
+</script>
+</body>
+</html>
